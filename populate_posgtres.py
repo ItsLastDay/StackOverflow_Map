@@ -19,6 +19,8 @@ There should be 3 tables in PostgreSQL DMBS:
 Populate the tables with prepared StackLite data,
 from csv files posts.csv, tags.csv, post_tag.csv
 (which are created by `prepare_stacklite_data.py`).
+
+Time: ~30 min.
 '''
 
 DATA_DIR = '../data'
