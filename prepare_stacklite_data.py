@@ -43,6 +43,9 @@ Output:
         1,5
         2,8
         ...
+
+
+Time: ~7min
 '''
 
 DATA_DIR = '../data'
@@ -87,13 +90,22 @@ with open('{}/question_tags.csv'.format(DATA_DIR), 'r', newline='') as question_
     with open('{}/post_tag.csv'.format(DATA_DIR), 'w', newline='') as post_tag_csv_file:
         writer = csv.writer(post_tag_csv_file)
         
+        # Queue to erase duplicate entries.
+        queue = []
+        MAX_QUEUE_SIZE = 40 # ~ max number of tags per question.
+        
         for i, row in enumerate(reader):
             if i == 0:
                 writer.writerow(['PostId', 'TagId'])
                 continue
             post_id = row[0]
             tag = row[1]
-            writer.writerow([post_id, tag_to_id_mapping[tag]])
+
+            if (post_id, tag) not in queue:
+                writer.writerow([post_id, tag_to_id_mapping[tag]])
+            queue.append((post_id, tag))
+            if len(queue) > MAX_QUEUE_SIZE:
+                queue.pop(0)
 
 
 
