@@ -8,8 +8,7 @@ from config import get_config_param
 '''
 Precompute and save adjacency matrix for all tags.
 
-Works painfully slow (~2000 rows per 6 hours), need to 
-make it parallel.
+Current version works in 50min per 1000 rows.
 '''
 
 
@@ -80,8 +79,8 @@ if __name__ == '__main__':
     PRECOMP_DIR = '{}/precomp_matrix'.format(DATA_DIR)
     number_of_tags = int(subprocess.getoutput('wc -l {}/tags.csv'.format(DATA_DIR)).split()[0]) - 1
 
-    already_computed = 2132
-    count_up_to = 3000
+    already_computed = 3000
+    count_up_to = 4000
     
     with open('{}/matrix_{}_{}.txt'.format(PRECOMP_DIR, already_computed + 1, count_up_to), 'w') as matrix:
         args = list(range(already_computed + 1, count_up_to + 1))
