@@ -79,8 +79,8 @@ if __name__ == '__main__':
     PRECOMP_DIR = '{}/precomp_matrix'.format(DATA_DIR)
     number_of_tags = int(subprocess.getoutput('wc -l {}/tags.csv'.format(DATA_DIR)).split()[0]) - 1
 
-    already_computed = 3000
-    count_up_to = 4000
+    already_computed = 35000
+    count_up_to = 35000
     
     with open('{}/matrix_{}_{}.txt'.format(PRECOMP_DIR, already_computed + 1, count_up_to), 'w') as matrix:
         args = list(range(already_computed + 1, count_up_to + 1))
