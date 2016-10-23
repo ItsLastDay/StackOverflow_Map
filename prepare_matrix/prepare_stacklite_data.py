@@ -48,7 +48,7 @@ Output:
 Time: ~7min
 '''
 
-DATA_DIR = '../data'
+DATA_DIR = '../../data'
 
 tag_to_id_mapping = dict()
 

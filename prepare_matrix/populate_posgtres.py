@@ -23,7 +23,7 @@ from csv files posts.csv, tags.csv, post_tag.csv
 Time: ~30 min.
 '''
 
-DATA_DIR = '../data'
+DATA_DIR = '../../data'
 
 db = pg.DB(
         dbname=get_config_param('db_name'),

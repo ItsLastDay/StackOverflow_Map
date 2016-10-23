@@ -75,7 +75,7 @@ get_adjacency_matrix_row = RowGetter()
 
 
 if __name__ == '__main__':
-    DATA_DIR = '../data'
+    DATA_DIR = '../../data'
     PRECOMP_DIR = '{}/precomp_matrix'.format(DATA_DIR)
     number_of_tags = int(subprocess.getoutput('wc -l {}/tags.csv'.format(DATA_DIR)).split()[0]) - 1
 

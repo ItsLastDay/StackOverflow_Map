@@ -24,8 +24,8 @@ using namespace std;
 namespace
 {
     const int max_row_size = 60100;
-    const string post_tag_csv = "../data/post_tag.csv";
-    const string out_file = "../data/precomp_matrix_2/matrix.txt";
+    const string post_tag_csv = "../../data/post_tag.csv";
+    const string out_file = "../../data/precomp_matrix_2/matrix.txt";
 
     int row_count[max_row_size];
 
