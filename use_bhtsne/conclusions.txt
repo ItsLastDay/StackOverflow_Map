@@ -1,5 +1,0 @@
-Notes about work of t-SNE.
-
-
-1) Raw t-SNE (without optimizations) has similarities > 0.0.
-However, they are very small on the main diagonal.
