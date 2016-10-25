@@ -21,3 +21,24 @@ While more directly accessible, this dump is too comprehensive.
 ### StackLite
 There is a githup repo called [StackLite](https://github.com/dgrtwo/StackLite), that provides minified version of the 
 dump. That version contains mostly question metadata, which is sufficient for our needs (because it includes tags).
+
+## Data storage
+
+### Raw data
+Currently, converted StackLite data is stored both as .csv files and inside Postgres DBMS.
+
+### Matrix format
+The adjacency matrix, which must be obtained from the graph, has the following format:  
+`vertex_from: vertex_to1,w1 vertex_to2,w2 ... vertex_tok,wk`  
+Each row starts with a vertex number, that this row is describing. Then zero or more space-separated strings come,
+each has a destination vertex, followed by a comma, followed by `w(source, dest)`. Each destination vertex number
+must be greater than the source number: we store only higher-than-main-diagonal part of the matrix.  
+Example:
+```
+1: 3517,1
+2:
+3: 41,1 44,1 54836,1
+4: 37043,1 44404,1
+6:
+7: 33,6 95,1 106,2 228,1 1098,1 1547,4 1906,1 3196,5
+```
