@@ -4,6 +4,8 @@ This is a project for creating 2D visualization of [StackOverflow](http://stacko
 tags using [t-SNE](https://lvdmaaten.github.io/tsne/) 
 algorithm.
 
+Everything is written in Python 3.5 and C++.
+
 ## The problem
 Consider all tags from StackOverflow: `Java`, `C#`, `multiprocessing`, etc. Let's build a graph,
 where each vertex is a tag. Edges are represented by questions: each question connects
