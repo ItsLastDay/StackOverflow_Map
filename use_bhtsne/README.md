@@ -23,12 +23,12 @@ that this measure can be minimized using gradient descent method.
 ### t-SNE
 [t-SNE](https://lvdmaaten.github.io/publications/papers/JMLR_2008.pdf) is a modification of SNE, proposed by van der Maaten
 and Hinton. It has the following differences from the original:
- - the KL divergence is is computed only once (per cost function evaluation) for join pobability distributions;
+ - the KL divergence is is computed only once (per cost function evaluation) for joint probability distributions;
  - [Student-t distribution](https://en.wikipedia.org/wiki/Student%27s_t-distribution) is used in low-dimensional space;
  - some minor tweaks to improve the quality of embeddings.
 
 ### t-SNE with optimizations
-In 2014, van der Maaten propesed an [optimized version](https://lvdmaaten.github.io/publications/papers/JMLR_2014.pdf) of t-SNE.
+In 2014, van der Maaten proposed an [optimized version](https://lvdmaaten.github.io/publications/papers/JMLR_2014.pdf) of t-SNE.
 It uses two approximation algorithms:
  - similarities for high-dimensional points are sparsely approximated using [Vantage Point Trees](http://stevehanov.ca/blog/index.php?id=130). The main idea is that distant points have low similarity
  anyway - so why bother looking at them? Just get a handful of nearest neighbours, compute similarities with them,
