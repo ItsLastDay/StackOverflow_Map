@@ -34,6 +34,7 @@
 
 #include <math.h>
 #include <float.h>
+#include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
 #include <cstring>
@@ -114,6 +115,13 @@ void TSNE::run(double* X, int N, int D, double* Y, int no_dims, double perplexit
         double sum_P = .0;
         for(int i = 0; i < N * N; i++) sum_P += P[i];
         for(int i = 0; i < N * N; i++) P[i] /= sum_P;
+
+        cout << "Input similarities for regular t-SNE:" << endl;
+        for(int i = 0; i < N; i++) {
+            for(int j = 0; j < N; j++)
+                cout << P[i * N + j] << " ";
+            cout << endl;
+        }
     }
 
     // Compute input similarities for approximate t-SNE
@@ -503,6 +511,7 @@ void TSNE::computeGaussianPerplexity(double* X, int N, int D, unsigned int** _ro
             col_P[row_P[n] + m] = (unsigned int) indices[m + 1].index();
             val_P[row_P[n] + m] = cur_P[m];
         }
+        cout << endl;
     }
 
     // Clean up memory
@@ -603,6 +612,7 @@ void TSNE::symmetrizeMatrix(unsigned int** _row_P, unsigned int** _col_P, double
 // Compute squared Euclidean distance matrix
 void TSNE::computeSquaredEuclideanDistance(double* X, int N, int D, double* DD) {
     const double* XnD = X;
+    size_t iters = 0;
     for(int n = 0; n < N; ++n, XnD += D) {
         const double* XmD = XnD + D;
         double* curr_elem = &DD[n*N + n];
@@ -613,9 +623,11 @@ void TSNE::computeSquaredEuclideanDistance(double* X, int N, int D, double* DD) 
             for(int d = 0; d < D; ++d) {
                 *curr_elem += (XnD[d] - XmD[d]) * (XnD[d] - XmD[d]);
             }
+            ++iters;
             *curr_elem_sym = *curr_elem;
         }
     }
+    cout << "Iterations of euclidean_distance: " << iters << endl;
 }
 
 

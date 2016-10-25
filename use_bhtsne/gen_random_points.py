@@ -15,4 +15,4 @@ dims = int(sys.argv[2])
 sparsity = float(sys.argv[3])
 
 for i in range(n):
-    print(' '.join(map(str, [random.randint(-n * sparsity, n * sparsity) for j in range(dims)])))
+    print('\t'.join(map(str, [random.randint(-n * sparsity, n * sparsity) for j in range(dims)])))
