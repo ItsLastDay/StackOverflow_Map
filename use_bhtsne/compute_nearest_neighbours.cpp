@@ -28,7 +28,9 @@ using namespace std;
  *
  *
  * Complexity: 
- *   O(N * K * log(N)), constant is high due to floating point ops.
+ *   not exactly known, something like
+ *   O(N^2 * K * log(N)), constant is high due to floating point ops.
+ *   On the full graph with K = 150, it works with 3500rows/5min speed.
  *  
  */
 
