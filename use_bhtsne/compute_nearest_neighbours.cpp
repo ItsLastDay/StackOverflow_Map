@@ -32,6 +32,8 @@ using namespace std;
  *   O(N^2 * K * log(N)), constant is high due to floating point ops.
  *   On the full graph with K = 150, it works with 3500rows/5min speed.
  *  
+ *
+ *  Running time: ~1 hour.
  */
 
 struct dijkstra
@@ -39,21 +41,14 @@ struct dijkstra
     void find_nearest_neighbours(int vertex_num, int num_of_neighbours)
     {
         auto st = set< pair<double, int> >();
-        int num_vertices = number_of_verices();
 
-        for (int i = 1; i <= num_vertices; i++)
-        {
-            current_distance_[i] = 1e15;
-        }
-
+        timer++;
+        current_time_[vertex_num] = timer;
         current_distance_[vertex_num] = 0.0;
-        for (int i = 1; i <= num_vertices; i++)
-        {
-            st.insert(make_pair(current_distance_[i], i));
-        }
+        st.insert(make_pair(current_distance_[vertex_num], vertex_num));
 
         cout << vertex_num << ": ";
-        for (int it = 0; it <= num_of_neighbours; it++)
+        for (int it = 0; it <= num_of_neighbours && not st.empty(); it++)
         {
             auto iter = st.begin();
             int best_vertex = iter->second;
@@ -62,6 +57,13 @@ struct dijkstra
             {
                 int to_vertex = edge.first;
                 double weight = edge.second;
+
+                if (current_time_[to_vertex] != timer)
+                {
+                    current_time_[to_vertex] = timer;
+                    current_distance_[to_vertex] = inf;
+                }
+
                 double cur_dist = current_distance_[to_vertex];
                 double proposed_dist = current_distance_[best_vertex] + weight;
 
@@ -116,10 +118,13 @@ struct dijkstra
         return vertex_num_to_normalized_num_.size();
     }
 private:
+    static constexpr double inf = 1e15;
     static const int max_vertices_ = 60000;
+    int timer = 0;
     map<int, int> vertex_num_to_normalized_num_;
     vector< pair<int, double> > adj_list_[max_vertices_];
     double current_distance_[max_vertices_];
+    int current_time_[max_vertices_];
 
     int normalize_vertex_num(int vertex_num)
     {
