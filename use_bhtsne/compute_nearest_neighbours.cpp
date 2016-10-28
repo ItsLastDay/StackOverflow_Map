@@ -108,6 +108,7 @@ struct dijkstra
                 adj_list_[dest_vertex].push_back(make_pair(source_vertex, edge_weight));
             }
         }
+        cout << "Preprocessing end" << endl;
     }
 
     int number_of_verices()
@@ -132,8 +133,8 @@ private:
 
     double convert_edge_w_to_weight(int edge_w)
     {
-        // Possible functions: exp(-x), 100 / log(x), ...
-        return 1000.0 / edge_w;
+        // Possible functions: 1000 / x, exp(-x), 100 / log(x), ...
+        return 100 / log(edge_w + 1);
     }
 };
 
