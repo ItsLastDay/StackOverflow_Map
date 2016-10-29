@@ -309,7 +309,7 @@ double TSNE::evaluateError(unsigned int* row_P, unsigned int* col_P, double* val
 }
 
 
-void read_nearest_neighbours(int num_neighbours, vector<int>* indices, vector<double>* distances)
+void read_nearest_neighbours(int num_neighbours, vector<int>* indices, vector<double>* distances, map<int, string>& id_to_tagname)
 {
     /*
      * Example line:
@@ -326,12 +326,15 @@ void read_nearest_neighbours(int num_neighbours, vector<int>* indices, vector<do
     inp >> cur_index;
     inp.ignore(1);
 
+    //cout << id_to_tagname[cur_index] << ": ";
+
     int idx = 1;
 
     while(inp >> cur_index)
     {
         inp.ignore(1);
         inp >> cur_dist;
+        //cout << id_to_tagname[cur_index] << " ";
 
         if (idx <= num_neighbours)
         {
@@ -340,6 +343,7 @@ void read_nearest_neighbours(int num_neighbours, vector<int>* indices, vector<do
         }
         ++idx;
     }
+//    cout << endl;
 
     assert(idx > num_neighbours);
 }
@@ -374,7 +378,7 @@ void TSNE::computeGaussianPerplexity(double* X, int N, int D, unsigned int** _ro
         // Find nearest neighbors
         indices.clear();
         distances.clear();
-        read_nearest_neighbours(K, &indices, &distances);
+        read_nearest_neighbours(K, &indices, &distances, id_to_tagname);
 
         // Initialize some variables for binary search
         bool found = false;
@@ -595,6 +599,13 @@ bool TSNE::load_data(double** data, int* n, int* d, int* no_dims, double* theta,
 
 	// Open file, read first 2 integers, allocate memory, and read the data
         cin >> *n >> *d >> *theta >> *perplexity >> *no_dims >> *max_iter;
+        for (int i = 0; i < *n; i++) 
+        {
+            int point_idx;
+            string tag_name;
+            cin >> point_idx >> tag_name;
+            id_to_tagname[point_idx] = tag_name;
+        }
         cin.ignore(1); // erase the \n after header.
 	printf("Read the %i x %i data matrix successfully!\n", *n, *d);
 	return true;
@@ -605,11 +616,13 @@ void TSNE::save_data(double* data, int* landmarks, double* costs, int n, int d) 
         cout << n << " " << d;
         for (int i = 0; i < n * d; i++)
         {
-            if (i % d == 0)
-                cout << "\n";
-            cout << data[i];
+            if (i % d == 0) 
+            {
+                cout << "\n" << id_to_tagname[i / d];
+            }
+            cout << " " << data[i];
         }
-	printf("Wrote the %i x %i data matrix successfully!\n", n, d);
+	printf("\nWrote the %i x %i data matrix successfully!\n", n, d);
 }
 
 
