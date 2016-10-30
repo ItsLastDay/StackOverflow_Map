@@ -16,4 +16,4 @@ path_to_neighbours_matrix="${full_path_adj_mat}_neighbours"
 ./merge_mappings.py "$conv_map_file" "$full_path_mapping" > "$id_to_tag_file" || exit 1
 
 cd ./nearest_neighbour_bhtsne
-./run.sh "$path_to_neighbours_matrix" "$id_to_tag_file"
+./run.sh "$path_to_neighbours_matrix" "$id_to_tag_file" 

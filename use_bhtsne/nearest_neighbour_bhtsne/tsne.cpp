@@ -613,15 +613,17 @@ bool TSNE::load_data(double** data, int* n, int* d, int* no_dims, double* theta,
 
 void TSNE::save_data(double* data, int* landmarks, double* costs, int n, int d) {
 
-        cout << n << " " << d;
+        cout << "######START TSV" << endl;
+        cout << "name\tx\ty";
         for (int i = 0; i < n * d; i++)
         {
             if (i % d == 0) 
             {
                 cout << "\n" << id_to_tagname[i / d];
             }
-            cout << " " << data[i];
+            cout << "\t" << data[i];
         }
+        cout << endl << "######END TSV" << endl;
 	printf("\nWrote the %i x %i data matrix successfully!\n", n, d);
 }
 
