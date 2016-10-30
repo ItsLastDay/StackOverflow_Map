@@ -27,19 +27,48 @@
     fill: white;
 }
 
+.bubble-text {
+    font: 1px Helvetica;
+    float: right;
+    line-height: 2px;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+    z-index: 100;
+}
+
 </style>
 
+<!-- Hide scrolling, because it is used for zooming in and out --> 
 <body style="overflow: hidden;">
+
 <script src="http://d3js.org/d3.v4.min.js"></script>
 
 <script>
 // The script is based on 
+// v3:
 // http://bl.ocks.org/mbostock/3680957,
 // http://bl.ocks.org/mbostock/3887118,
-// though translated from v3 to v4.
+//
+// v4:
+// https://bl.ocks.org/mbostock/db6b4335bf1662b413e7968910104f0f
 
 // Responsive SVG is per http://stackoverflow.com/a/25978286/5338270
 
+// Tooltip per https://bl.ocks.org/d3noob/257c360b3650b9f0a52dd8257d7a2d73 
+
+var div = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+    
 var svg = d3.select('body')
     .append('div').classed('svg-container', true)
       .append('svg')
@@ -115,15 +144,35 @@ function main(data) {
         .attr('transform', transform);
 
     var circle = elemEnter.append('circle')
-          .attr('r', 2.5)
+          .attr('r', 1.4)
           .attr('fill', 'blue')
-    elemEnter.append('text')
-        .text(function(d) { return d.name; });
+          .attr('fill-opacity', '0.7')
+          .on("mouseover", function(d) {
+           div.transition()
+             .duration(200)
+             .style("opacity", .9);
+           div.html(d.name)
+             .style("left", (d3.event.pageX) + "px")
+             .style("top", (d3.event.pageY - 28) + "px");
+           })
+         .on("mouseout", function(d) {
+           div.transition()
+             .duration(500)
+             .style("opacity", 0);
+           });
+    ;
 
+    elemEnter.append('text')
+        .attr('class', 'bubble-text')
+        .attr('dx', '.3em')
+        .text(function(d) { return d.name; })
+        .attr('transform', 'rotate(10,2,0)')
+    ;
 
 
     function zoomed() {
       view.attr("transform", d3.event.transform);
+      // This line as per http://stackoverflow.com/a/38600201/5338270 
       g.attr("transform", d3.event.transform);
       gX.call(xAxis.scale(d3.event.transform.rescaleX(x)));
       gY.call(yAxis.scale(d3.event.transform.rescaleY(y)));
