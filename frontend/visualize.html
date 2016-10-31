@@ -29,7 +29,6 @@
 
 .bubble-text {
     font: 1px Helvetica;
-    float: right;
     line-height: 2px;
 }
 
@@ -83,7 +82,7 @@ var x = d3.scaleLinear().range([0, width]);
 
 var y = d3.scaleLinear().range([height, 0]);
 
-var data = d3.tsv("http://localhost:8000/tsne_output.tsv", function (error, data) {
+var data = d3.tsv("http://localhost:8000/tsne_big_perp_30.tsv", function (error, data) {
     if(error){
         return console.log(error);
     }
