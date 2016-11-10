@@ -178,7 +178,7 @@ private:
     double convert_edge_w_to_weight(int edge_w)
     {
         // Possible functions: 1000 / x, exp(-x), 100 / log(x), ...
-        return 100 / log(edge_w + 1);
+        return 10000 / log(edge_w + 1);
     }
 };
 

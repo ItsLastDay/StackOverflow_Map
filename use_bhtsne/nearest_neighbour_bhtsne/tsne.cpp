@@ -111,6 +111,7 @@ void TSNE::run(double* X, int N, int D, double* Y, int no_dims, double perplexit
     else printf("Input similarities computed in %4.2f seconds (sparsity = %f)!\nLearning embedding...\n", (float) (end - start) / CLOCKS_PER_SEC, (double) row_P[N] / ((double) N * (double) N));
     start = clock();
 
+    cout << endl;
 	for(int iter = 0; iter < max_iter; iter++) {
 
         // Compute (approximate) gradient
@@ -147,6 +148,7 @@ void TSNE::run(double* X, int N, int D, double* Y, int no_dims, double perplexit
                 total_time += (float) (end - start) / CLOCKS_PER_SEC;
                 printf("Iteration %d: error is %f (50 iterations in %4.2f seconds)\n", iter, C, (float) (end - start) / CLOCKS_PER_SEC);
             }
+            cout << endl;
 			start = clock();
         }
     }
@@ -373,7 +375,12 @@ void TSNE::computeGaussianPerplexity(double* X, int N, int D, unsigned int** _ro
 
     for(int n = 0; n < N; n++) {
 
-        if(n % 10000 == 0) printf(" - point %d of %d\n", n, N);
+        if(n % 10000 == 0) 
+        {
+            printf(" - point %d of %d\n", n, N);
+
+            cout << endl;
+        }
 
         // Find nearest neighbors
         indices.clear();

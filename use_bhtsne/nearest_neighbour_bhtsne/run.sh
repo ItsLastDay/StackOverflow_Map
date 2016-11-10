@@ -14,7 +14,7 @@ dims=0
 theta=0.3
 perplexity=30
 no_dims=2
-max_iter=5000
+max_iter=17000
 
 printf "%d %d %f %d %d %d\n" "$n" "$dims" "$theta" "$perplexity" "$no_dims" "$max_iter" > "$tmp_inp_file"
 cat "$mapping_file" >> "$tmp_inp_file"
