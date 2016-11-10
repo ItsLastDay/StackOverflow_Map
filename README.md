@@ -28,5 +28,5 @@ Given such structure, plot all tags on a 2D map using t-SNE algorithm.
  - the whole thing must run in less than 24 hours (i.e. plotting a single dump).
 
 ### Authors
-Mikhail Koltsov  
-Arkady Kalakutsky
+Mikhail Koltsov ([ItsLastDay](https://github.com/ItsLastDay))  
+Arkady Kalakutsky ([testlnord](https://github.com/testlnord))
