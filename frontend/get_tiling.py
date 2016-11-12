@@ -24,7 +24,7 @@ class Tag:
         self.name = name
 
 
-class TilerDurden:
+class Tiler:
     SHIFT = 10
     TILE_DIM = 256
 
@@ -73,7 +73,7 @@ class TilerDurden:
                         point_coords.y / size_tile * self.TILE_DIM)
 
             if zoom >= 7:
-                d.text(pnt, point['name'], fill=(0,0,0))
+                d.text(pnt, tag.name, fill=(0,0,0))
             d.ellipse([pnt.x - circle_rad, pnt.y - circle_rad,
                    pnt.x + circle_rad, pnt.y + circle_rad],
                    fill=(0, 0, 255))
@@ -83,11 +83,12 @@ class TilerDurden:
 
 
 if __name__ == '__main__':
-    tiler = TilerDurden(get_tags_data())
+    tiler = Tiler(get_tags_data())
 
-    tile_size = 4
-    for y in range(2 ** tile_size):
-        for x in range(2 ** tile_size):
-            im, cnt_points = tiler.get_tile(x, y, tile_size)
-            fname = '{}_{}_{}.png'.format(x, y, tile_size)
-            im.save(fname)
+    for tile_size in range(7, 9):
+        print('Generating zoom level =',tile_size)
+        for y in range(2 ** tile_size):
+            for x in range(2 ** tile_size):
+                im, cnt_points = tiler.get_tile(x, y, tile_size)
+                fname = './tiles/{}_{}_{}.png'.format(x, y, tile_size)
+                im.save(fname)
