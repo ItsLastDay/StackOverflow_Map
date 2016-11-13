@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import csv
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageOps
 from collections import namedtuple
 
 from pyqtree import Index
@@ -26,7 +26,7 @@ class Tag:
 
 class Tiler:
     SHIFT = 10
-    TILE_DIM = 256
+    TILE_DIM = 253
 
     def __init__(self, tags):
         self.max_x = max((tag.x for tag in tags)) + self.SHIFT
@@ -49,7 +49,7 @@ class Tiler:
         """
         Get one of 2^z * 2^z tiles, with coordinates (x, y) starting from zero.
         """
-        im = Image.new('RGB', (self.TILE_DIM, self.TILE_DIM), (255, 255, 255))
+        im = Image.new('RGB', (self.TILE_DIM, self.TILE_DIM), (200, 200, 200))
         d = ImageDraw.Draw(im)
 
         size_tile = self.size / (1 << zoom)
@@ -85,10 +85,11 @@ class Tiler:
 if __name__ == '__main__':
     tiler = Tiler(get_tags_data())
 
-    for tile_size in range(7, 9):
+    for tile_size in range(0, 8):
         print('Generating zoom level =',tile_size)
         for y in range(2 ** tile_size):
             for x in range(2 ** tile_size):
                 im, cnt_points = tiler.get_tile(x, y, tile_size)
                 fname = './tiles/{}_{}_{}.png'.format(x, y, tile_size)
+                im = ImageOps.expand(im, border=3,fill='black')
                 im.save(fname)
