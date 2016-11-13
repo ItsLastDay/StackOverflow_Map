@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+
+</style>
+<svg></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-tile.v0.0.min.js"></script>
+<script>
+/*
+This script is based on http://bl.ocks.org/mbostock/5914438
+*/
+
+var pi = Math.PI,
+    tau = 2 * pi;
+    
+var width = Math.max(960, window.innerWidth),
+    height = Math.max(500, window.innerHeight);
+
+var projection = d3.geoMercator()
+    .scale(1 / tau)
+    .translate([0, 0]);
+
+var tile = d3.tile()
+    .size([width, height]);
+
+
+var zoom = d3.zoom()
+    .scaleExtent([1 << 8, 1 << 15])
+    .on("zoom", zoomed);
+
+var svg = d3.select("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var raster = svg.append("g");
+
+var center = [0, 0];
+
+svg
+  .call(zoom)
+  .call(zoom.transform, d3.zoomIdentity
+      .translate(width / 2, height / 2)
+      .scale(1 << 9)
+      .translate(-center[0], -center[1]));
+
+
+function zoomed() {
+  var transform = d3.event.transform;
+
+  var tiles = tile
+      .scale(transform.k)
+      .translate([transform.x, transform.y])
+      ();
+  console.log(tiles);
+
+  var image = raster
+      .attr("transform", stringify(tiles.scale, tiles.translate))
+    .selectAll("image")
+    .data(tiles, function(d) { return d; });
+
+
+  image.exit().remove();
+
+  image.enter().append("image")
+      .attr("xlink:href", function(d) { 
+        var z = d[2],
+            k = 1 << z,
+            x = (d[0] % k + k) % k,
+            y = d[1];
+        return "http://localhost:8000/tiles/" + x + "_" + y + "_" + z + ".png";
+      })
+      .attr("x", function(d) { return d[0] * 256; })
+      .attr("y", function(d) { return d[1] * 256; })
+      .attr("width", 256)
+      .attr("height", 256);
+}
+
+function stringify(scale, translate) {
+  var k = scale / 256, r = scale % 1 ? Number : Math.round;
+  return "translate(" + r(translate[0] * scale) + "," + r(translate[1] * scale) + ") scale(" + k + ")";
+}
+
+</script>
