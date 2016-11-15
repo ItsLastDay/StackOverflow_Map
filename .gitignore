@@ -1,6 +1,23 @@
+# Configuration file with secrets
 local.config.json
+
+# Raw data used for visualization
+questions.csv
+question_tags.csv
+
+# Compiled .cpp files and output of t-SNE and tiling generator
 bh_tsne
 *.png
 *.tsv
+
+# Python compiled modules
+*.pyc
+
+# Vim and Ctags files
 *.swp
 tags
+
+# graph2vec interim files
+*.mat
+*.data
+*.map
