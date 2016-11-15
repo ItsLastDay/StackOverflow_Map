@@ -1,4 +1,6 @@
 local.config.json
 bh_tsne
+*.png
+*.tsv
 *.swp
 tags
