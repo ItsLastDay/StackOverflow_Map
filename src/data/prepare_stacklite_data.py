@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
+
 import csv
+import os.path
 
 '''
 Take StackOverflow data from https://github.com/dgrtwo/StackLite:
@@ -48,14 +50,17 @@ Output:
 Time: ~7min
 '''
 
-DATA_DIR = '../../data'
+REPO_DIR = os.path.abspath(os.path.dirname(__file__))
+RAW_DATA_DIR = os.path.join(REPO_DIR, '../../data/raw')
+INTERIM_DATA_DIR = os.path.join(REPO_DIR, '../../data/interim')
 
 tag_to_id_mapping = dict()
 
 
-with open('{}/questions.csv'.format(DATA_DIR), 'r', newline='') as questions_file:
+with open(os.path.join(RAW_DATA_DIR, 'questions.csv'), 'r', newline='') as questions_file:
     reader = csv.reader(questions_file)
-    with open('{}/posts.csv'.format(DATA_DIR), 'w', newline='') as posts_csv_file:
+    with open(os.path.join(INTERIM_DATA_DIR, 'posts.csv'), 'w', newline='') as posts_csv_file:
+        # We could use DictWriter, but it is slower.
         writer = csv.writer(posts_csv_file)
         for i, row in enumerate(reader):
             if i == 0:
@@ -66,7 +71,7 @@ with open('{}/questions.csv'.format(DATA_DIR), 'r', newline='') as questions_fil
             writer.writerow([post_id, creation_date])
 
 
-with open('{}/question_tags.csv'.format(DATA_DIR), 'r', newline='') as question_tags_file:
+with open(os.path.join(RAW_DATA_DIR, 'question_tags.csv'), 'r', newline='') as question_tags_file:
     reader = csv.reader(question_tags_file)
     all_tags = set()
 
@@ -76,7 +81,7 @@ with open('{}/question_tags.csv'.format(DATA_DIR), 'r', newline='') as question_
 
     tags = list(sorted(all_tags))
 
-    with open('{}/tags.csv'.format(DATA_DIR), 'w', newline='') as tags_csv_file:
+    with open(os.path.join(INTERIM_DATA_DIR, 'tags.csv'), 'w', newline='') as tags_csv_file:
         writer = csv.writer(tags_csv_file)
         writer.writerow(['Id', 'Tag'])
         for i, tag in enumerate(tags, 1):
@@ -85,12 +90,16 @@ with open('{}/question_tags.csv'.format(DATA_DIR), 'r', newline='') as question_
 
 
 
-with open('{}/question_tags.csv'.format(DATA_DIR), 'r', newline='') as question_tags_file:
+with open(os.path.join(RAW_DATA_DIR, 'question_tags.csv'), 'r', newline='') as question_tags_file:
     reader = csv.reader(question_tags_file)
-    with open('{}/post_tag.csv'.format(DATA_DIR), 'w', newline='') as post_tag_csv_file:
+    with open(os.path.join(INTERIM_DATA_DIR, 'post_tag.csv'), 'w', newline='') as post_tag_csv_file:
         writer = csv.writer(post_tag_csv_file)
         
         # Queue to erase duplicate entries.
+        # We know that all tags for a single question come sequentially
+        # in `question_tags.csv`. Some of them may repeat, unfortunately.
+        # In order to overcome this, store a queue of last MAX_QUEUE_SIZE entries.
+        # If the current <post, tag> pair is already inside queue, do not output it.
         queue = []
         MAX_QUEUE_SIZE = 40 # ~ max number of tags per question.
         

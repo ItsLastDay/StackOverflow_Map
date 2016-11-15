@@ -6,6 +6,8 @@ questions.csv
 question_tags.csv
 
 # Compiled .cpp files and output of t-SNE and tiling generator
+compute_matrix
+compute_nearest_neighbours
 bh_tsne
 *.png
 *.tsv

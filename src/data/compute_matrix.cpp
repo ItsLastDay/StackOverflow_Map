@@ -23,11 +23,10 @@ using namespace std;
 
 namespace
 {
-    const int max_row_size = 60100;
-    const string post_tag_csv = "../../data/post_tag.csv";
-    const string out_file = "../../data/precomp_matrix_2/matrix.txt";
+    const string post_tag_csv = "../../data/interim/post_tag.csv";
+    const string out_file = "../../data/interim/adj_matrix.txt";
 
-    int row_count[max_row_size];
+    vector<int> row_count;
 
     unordered_map<int, vector<int>> post_to_tags;
     vector< pair<int, int> > tags_with_posts;
@@ -35,7 +34,7 @@ namespace
     void print_row(ostream& out, int row_no)
     {
         out << row_no << ": ";
-        for (int i = 0; i < max_row_size; i++)
+        for (size_t i = 0; i < row_count.size(); i++)
         {
             if (row_count[i] > 0)
             {
@@ -57,6 +56,8 @@ int main()
     // Skip header.
     getline(inp, current_line);
 
+    int max_tag_id = 0;
+
     while (getline(inp, current_line))
     {
         istringstream ss(current_line);
@@ -66,11 +67,14 @@ int main()
         ss >> tag_id;
 
         post_to_tags[post_id].push_back(tag_id);
+        max_tag_id = max(max_tag_id, tag_id);
         tags_with_posts.push_back(make_pair(tag_id, post_id));
     }
+    
+    ++max_tag_id;
 
     sort(tags_with_posts.begin(), tags_with_posts.end());
-    memset(row_count, 0, sizeof(row_count));
+    row_count.resize(max_tag_id);
 
     size_t sz = tags_with_posts.size();
     for (size_t i = 0; i < sz; i++)
@@ -79,7 +83,8 @@ int main()
         {
             // Encountered a new tag.
             print_row(out, tags_with_posts[i - 1].first);
-            memset(row_count, 0, sizeof(row_count));
+            row_count.clear();
+            row_count.resize(max_tag_id);
         }
 
         post_id = tags_with_posts[i].second;

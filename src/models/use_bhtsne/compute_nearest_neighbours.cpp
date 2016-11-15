@@ -15,7 +15,7 @@ using namespace std;
  * Input arguments: 
  *   1 - path to a text file with matrix;
  *   2 - integer K.
- *   3 - path to output file, where we store mapping 
+ *   3 - path to output file, where we will store mapping 
  *      from tag id (from the adjacency matrix)
  *      to tag id (in the neighbour matrix)
  *
@@ -134,10 +134,17 @@ struct dijkstra
             source_vertex = normalize_vertex_num(source_vertex);
             ss.ignore(1);
 
+            if (static_cast<size_t>(source_vertex) >= adj_list_.size())
+                adj_list_.resize(source_vertex + 1);
+
             int dest_vertex, edge_w;
             while (ss >> dest_vertex)
             {
                 dest_vertex = normalize_vertex_num(dest_vertex);
+
+                if (static_cast<size_t>(dest_vertex) >= adj_list_.size())
+                    adj_list_.resize(dest_vertex + 1);
+
                 ss.ignore(1);
                 ss >> edge_w;
                 double edge_weight = convert_edge_w_to_weight(edge_w);
@@ -145,6 +152,10 @@ struct dijkstra
                 adj_list_[dest_vertex].push_back(make_pair(source_vertex, edge_weight));
             }
         }
+
+        current_time_.resize(number_of_verices() + 1);
+        current_distance_.resize(number_of_verices() + 1);
+        current_neighbour_indices_.resize(number_of_verices() + 1);
         cerr << "Preprocessing end" << endl;
     }
 
@@ -154,13 +165,12 @@ struct dijkstra
     }
 private:
     static constexpr double inf = 1e15;
-    static const int max_vertices_ = 60000;
     int timer = 0;
     map<int, int> vertex_num_to_normalized_num_;
-    vector< pair<int, double> > adj_list_[max_vertices_];
-    double current_distance_[max_vertices_];
-    int current_time_[max_vertices_];
-    int current_neighbour_indices_[max_vertices_];
+    vector< vector< pair<int, double> > > adj_list_;
+    vector<double> current_distance_;
+    vector<int> current_time_;
+    vector<int> current_neighbour_indices_;
     ofstream mapping_out_;
 
     int normalize_vertex_num(int vertex_num)
@@ -178,7 +188,7 @@ private:
     double convert_edge_w_to_weight(int edge_w)
     {
         // Possible functions: 1000 / x, exp(-x), 100 / log(x), ...
-        return 10000 / log(edge_w + 1);
+        return 100 / log(edge_w + 1);
     }
 };
 
