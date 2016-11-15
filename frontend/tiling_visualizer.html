@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <style>
+.svg-container {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%; /* aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+}
+.svg-content-responsive {
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
 
 body {
   margin: 0;
@@ -9,7 +23,8 @@ body {
 
 
 </style>
-<svg></svg>
+
+<body>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://d3js.org/d3-tile.v0.0.min.js"></script>
 <script>
@@ -35,9 +50,12 @@ var zoom = d3.zoom()
     .scaleExtent([1 << 8, 1 << 16])
     .on("zoom", zoomed);
 
-var svg = d3.select("svg")
-    .attr("width", width)
-    .attr("height", height);
+var svg = d3.select('body')
+    .append('div').classed('svg-container', true)
+      .append('svg')
+      .attr("preserveAspectRatio", "xMinYMin meet")
+      .attr("viewBox", "0 0 " + width + " " + height)
+      .classed("svg-content-responsive", true);
 
 var raster = svg.append("g");
 
@@ -90,3 +108,4 @@ function stringify(scale, translate) {
 }
 
 </script>
+</body>
