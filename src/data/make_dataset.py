@@ -23,7 +23,8 @@ Example usage:
     python3 make_dataset.py
 '''
 
-RAW_DATA_DIR = '../../data/raw'
+SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
+RAW_DATA_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, '../../data/raw'))
 STACKLITE_BASE_URL = 'https://github.com/dgrtwo/StackLite/raw/master'
 
 def main():
@@ -34,7 +35,7 @@ def main():
     
     for filename in ('question_tags.csv.gz', 'questions.csv.gz'):
         download_url = '{}/{}'.format(STACKLITE_BASE_URL, filename)
-        file_path = os.path.join(RAW_DATA_DIR, filename) 
+        file_path = os.path.join(RAW_DATA_DIR, filename)
 
         print('Downloading {}'.format(filename))
         with urllib.request.urlopen(download_url) as response:
@@ -43,8 +44,8 @@ def main():
 
         print('Decompressing {}'.format(filename))
         with gzip.open(file_path, 'rb') as compressed_file:
-            out_filename = filename[:-len('.csv.gz')]
-            out_file_path = os.path.join(RAW_DATA_DIR, out_file_path)
+            out_filename = filename[:-len('.csv.gz')] + '.csv'
+            out_file_path = os.path.join(RAW_DATA_DIR, out_filename)
 
             with open(out_file_path, 'wb') as out_file:
                 shutil.copyfileobj(compressed_file, out_file)
