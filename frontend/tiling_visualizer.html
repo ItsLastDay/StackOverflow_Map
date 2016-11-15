@@ -32,7 +32,7 @@ var tile = d3.tile()
 
 
 var zoom = d3.zoom()
-    .scaleExtent([1 << 8, 1 << 15])
+    .scaleExtent([1 << 8, 1 << 16])
     .on("zoom", zoomed);
 
 var svg = d3.select("svg")
@@ -47,7 +47,7 @@ svg
   .call(zoom)
   .call(zoom.transform, d3.zoomIdentity
       .translate(width / 2, height / 2)
-      .scale(1 << 9)
+      .scale(1 << 10)
       .translate(-center[0], -center[1]));
 
 
@@ -72,9 +72,11 @@ function zoomed() {
       .attr("xlink:href", function(d) { 
         var z = d[2],
             k = 1 << z,
-            x = (d[0] % k + k) % k,
+            x = d[0],
             y = d[1];
-        return "http://localhost:8000/tiles/" + x + "_" + y + "_" + z + ".png";
+            if(x < k && y < k) {
+                return "http://localhost:8000/tiles/" + x + "_" + y + "_" + z + ".png";
+            }
       })
       .attr("x", function(d) { return d[0] * 256; })
       .attr("y", function(d) { return d[1] * 256; })

@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
+import sys
 import csv
 from PIL import Image, ImageDraw, ImageOps
 from collections import namedtuple
+from multiprocessing import Pool
+import itertools
 
 from pyqtree import Index
 
@@ -26,7 +29,8 @@ class Tag:
 
 class Tiler:
     SHIFT = 10
-    TILE_DIM = 253
+    BORDER = 1
+    TILE_DIM = 256 - BORDER
 
     def __init__(self, tags):
         self.max_x = max((tag.x for tag in tags)) + self.SHIFT
@@ -82,14 +86,22 @@ class Tiler:
         return im, cnt_points
 
 
-if __name__ == '__main__':
+def main():
+    max_tile_size = int(sys.argv[1]) if len(sys.argv) >= 2 else 8
     tiler = Tiler(get_tags_data())
 
-    for tile_size in range(0, 8):
+    def tile_saver(x, y, tile_size):
+        im, cnt_points = tiler.get_tile(x, y, tile_size)
+        fname = './tiles/{}_{}_{}.png'.format(x, y, tile_size)
+        im = ImageOps.expand(im, border=Tiler.BORDER,fill='black')
+        im.save(fname)
+
+    for tile_size in range(0, max_tile_size):
         print('Generating zoom level =',tile_size)
-        for y in range(2 ** tile_size):
-            for x in range(2 ** tile_size):
-                im, cnt_points = tiler.get_tile(x, y, tile_size)
-                fname = './tiles/{}_{}_{}.png'.format(x, y, tile_size)
-                im = ImageOps.expand(im, border=3,fill='black')
-                im.save(fname)
+        all_args = ((x, y, tile_size) for x in range(2 ** tile_size) 
+                for y in range(2 ** tile_size))
+        for args in all_args:
+            tile_saver(*args)
+
+if __name__ == '__main__':
+    main()
