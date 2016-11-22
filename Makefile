@@ -76,6 +76,7 @@ $(BHTSNE)/nearest_neighbour_bhtsne/bh_tsne: $(BHTSNE)/nearest_neighbour_bhtsne/t
 	$(CPP) $(CPPFLAGS) -o $@ $^
 
 
+# Run a rewritten version of `bhtsne` on out nearest neighbour matrix.
 $(PROCESSED)/raw_tsne_output.txt: $(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(BHTSNE)/nearest_neighbour_bhtsne/bh_tsne $(INTERIM)/nn_matrix.txt $(INTERIM)/id_to_tag_name.txt
 	$(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(INTERIM)/nn_matrix.txt $(INTERIM)/id_to_tag_name.txt > $@
 $(PROCESSED)/raw_tsne_output_example.txt: $(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(BHTSNE)/nearest_neighbour_bhtsne/bh_tsne $(INTERIM)/nn_matrix_example.txt $(INTERIM)/id_to_tag_name_example.txt

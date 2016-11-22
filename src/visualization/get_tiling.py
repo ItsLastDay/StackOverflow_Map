@@ -103,7 +103,7 @@ class Tiler:
             pnt = Point(point_coords.x / size_tile * self.TILE_DIM,
                         point_coords.y / size_tile * self.TILE_DIM)
 
-            if zoom >= 7:
+            if zoom >= 5:
                 d.text(pnt, tag.name, fill=(0,0,0))
             d.ellipse([pnt.x - circle_rad, pnt.y - circle_rad,
                    pnt.x + circle_rad, pnt.y + circle_rad],
@@ -130,7 +130,7 @@ def main():
         im = ImageOps.expand(im, border=Tiler.BORDER,fill='black')
         im.save(fname)
 
-    for tile_size in range(0, max_tile_size):
+    for tile_size in range(0, max_tile_size + 1):
         print('Generating zoom level =',tile_size)
         all_args = ((x, y, tile_size) for x in range(2 ** tile_size) 
                 for y in range(2 ** tile_size))
