@@ -1,6 +1,0 @@
-[submodule "src/models/use_bhtsne/bhtsne"]
-	path = src/models/use_bhtsne/bhtsne
-	url = https://github.com/lvdmaaten/bhtsne
-[submodule "src/models/train_graph2vec/graph2vec"]
-	path = src/models/train_graph2vec/graph2vec
-	url = https://github.com/ItsLastDay/graph2vec
