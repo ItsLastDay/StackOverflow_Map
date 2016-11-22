@@ -15,6 +15,7 @@ def main():
     occured_start = False
     with open(raw_output_fname, 'r') as raw_output:
         for row in raw_output:
+            row = row.strip()
             if row == END_INFO:
                 occured_start = False
             if occured_start:

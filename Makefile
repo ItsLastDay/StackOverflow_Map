@@ -65,26 +65,34 @@ $(INTERIM)/id_to_tag_name_example.txt: $(INTERIM)/adj_id_to_nn_id_example.txt $(
 
 
 # Obtain all data needed for t-SNE run
-data: raw_data $(INTERIM)/nn_matrix.txt $(INTERIM)/id_to_tag_name.txt
-
+data: $(DATA)/raw/questions.csv $(DATA)/raw/question_tags.csv $(INTERIM)/nn_matrix.txt $(INTERIM)/id_to_tag_name.txt
 data_example: $(INTERIM)/nn_matrix_example.txt $(INTERIM)/id_to_tag_name_example.txt
+
+
+
 
 
 $(BHTSNE)/nearest_neighbour_bhtsne/bh_tsne: $(BHTSNE)/nearest_neighbour_bhtsne/tsne.cpp $(BHTSNE)/nearest_neighbour_bhtsne/sptree.cpp
 	$(CPP) $(CPPFLAGS) -o $@ $^
 
 
-$(PROCESSED)/raw_tsne_output.txt: data $(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(BHTSNE)/nearest_neighbour_bhtsne/bh_tsne
+$(PROCESSED)/raw_tsne_output.txt: $(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(BHTSNE)/nearest_neighbour_bhtsne/bh_tsne $(INTERIM)/nn_matrix.txt $(INTERIM)/id_to_tag_name.txt
 	$(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(INTERIM)/nn_matrix.txt $(INTERIM)/id_to_tag_name.txt > $@
-$(PROCESSED)/raw_tsne_output_example.txt: data_example $(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(BHTSNE)/nearest_neighbour_bhtsne/bh_tsne
+$(PROCESSED)/raw_tsne_output_example.txt: $(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(BHTSNE)/nearest_neighbour_bhtsne/bh_tsne $(INTERIM)/nn_matrix_example.txt $(INTERIM)/id_to_tag_name_example.txt
 	$(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(INTERIM)/nn_matrix_example.txt $(INTERIM)/id_to_tag_name_example.txt > $@
 
 
-visualize: $(PROCESSED)/raw_tsne_output.txt $(BHTSNE)/extract_tsv.py
+$(SRC)/visualization/tsne_output.tsv: $(PROCESSED)/raw_tsne_output.txt $(BHTSNE)/extract_tsv.py
 	python3 $(BHTSNE)/extract_tsv.py $(PROCESSED)/raw_tsne_output.txt > $(SRC)/visualization/tsne_output.tsv
-	
-visualize_example: $(PROCESSED)/raw_tsne_output_example.txt $(BHTSNE)/extract_tsv.py
+$(SRC)/visualization/tsne_output_example.tsv: $(PROCESSED)/raw_tsne_output_example.txt $(BHTSNE)/extract_tsv.py
 	python3 $(BHTSNE)/extract_tsv.py $(PROCESSED)/raw_tsne_output_example.txt > $(SRC)/visualization/tsne_output_example.tsv
 
 
-.PHONY: data all raw_data data_example
+visualize: $(SRC)/visualization/tsne_output.tsv
+visualize_example: $(SRC)/visualization/tsne_output_example.tsv
+
+
+
+# https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html
+# "A phony target should not be a prerequisite of a real target file; if it is, its recipe will be run every time make goes to update that file. As long as a phony target is never a prerequisite of a real target, the phony target recipe will be executed only when the phony target is a specified goal".
+.PHONY: all data raw_data data_example visualize visualize_example
