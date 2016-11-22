@@ -24,9 +24,6 @@ dump. That version contains mostly question metadata, which is sufficient for ou
 
 ## Data storage
 
-### Raw data
-Currently, converted StackLite data is stored both as .csv files and inside Postgres DBMS.
-
 ### Matrix format
 The adjacency matrix, which must be obtained from the graph, has the following format:  
 `vertex_from: vertex_to1,w1 vertex_to2,w2 ... vertex_tok,wk`  
