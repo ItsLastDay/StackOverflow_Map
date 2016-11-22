@@ -25,7 +25,7 @@ raw_data: $(DATA)/raw/questions.csv $(DATA)/raw/question_tags.csv
 
 
 # Extract only needed information from raw data.
-$(INTERIM)/posts.csv $(INTERIM)/tags.csv $(INTERIM)/post_tag.csv: raw_data $(SRC)/data/prepare_stacklite_data.py
+$(INTERIM)/posts.csv $(INTERIM)/tags.csv $(INTERIM)/post_tag.csv: $(DATA)/raw/questions.csv $(DATA)/raw/question_tags.csv $(SRC)/data/prepare_stacklite_data.py
 	python3 $(SRC)/data/prepare_stacklite_data.py
 
 
@@ -34,8 +34,9 @@ $(SRC)/data/compute_matrix: $(SRC)/data/compute_matrix.cpp
 	$(CPP) -o $@ $(CPPFLAGS) $<
 
 # Compute an adjacency matrix for all tags.
+# http://stackoverflow.com/questions/19985936/current-working-directory-of-makefile
 $(INTERIM)/adj_matrix.txt: $(SRC)/data/compute_matrix $(INTERIM)/post_tag.csv
-	$(SRC)/data/compute_matrix
+	cd $(SRC)/data && ./compute_matrix
 
 
 # Compute an adjacency matrix for example set of tags.
@@ -51,10 +52,10 @@ $(BHTSNE)/compute_nearest_neighbours: $(BHTSNE)/compute_nearest_neighbours.cpp
 # which t-SNE will use. The number of neighbours should be greater than
 # 3 * perplexity.
 $(INTERIM)/adj_id_to_nn_id.txt $(INTERIM)/nn_matrix.txt: $(BHTSNE)/compute_nearest_neighbours $(INTERIM)/adj_matrix.txt
-	$(BHTSNE)/compute_nearest_neighbours $(INTERIM)/adj_matrix.txt 155 $(INTERIM)/adj_id_to_nn_id.txt > $(INTERIM)/nn_matrix.txt
+	cd $(BHTSNE) && ./compute_nearest_neighbours $(INTERIM)/adj_matrix.txt 155 $(INTERIM)/adj_id_to_nn_id.txt > $(INTERIM)/nn_matrix.txt
 	
 $(INTERIM)/adj_id_to_nn_id_example.txt $(INTERIM)/nn_matrix_example.txt: $(BHTSNE)/compute_nearest_neighbours $(INTERIM)/adj_matrix_example.txt
-	$(BHTSNE)/compute_nearest_neighbours $(INTERIM)/adj_matrix_example.txt 155 $(INTERIM)/adj_id_to_nn_id_example.txt > $(INTERIM)/nn_matrix_example.txt
+	cd $(BHTSNE) && ./compute_nearest_neighbours $(INTERIM)/adj_matrix_example.txt 155 $(INTERIM)/adj_id_to_nn_id_example.txt > $(INTERIM)/nn_matrix_example.txt
 
 
 # Obtain mapping from id-s to names for tags.
