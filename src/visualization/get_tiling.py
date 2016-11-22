@@ -59,7 +59,9 @@ class Tiler:
     BORDER = 1
     TILE_DIM = 256 - BORDER
 
-    def __init__(self, tags):
+    def __init__(self, tags, max_tile_size):
+        self.max_tile_size = max_tile_size
+        
         self.max_x = max((tag.x for tag in tags)) + self.SHIFT
         self.min_x = min((tag.x for tag in tags)) - self.SHIFT
 
@@ -103,7 +105,7 @@ class Tiler:
             pnt = Point(point_coords.x / size_tile * self.TILE_DIM,
                         point_coords.y / size_tile * self.TILE_DIM)
 
-            if zoom >= 5:
+            if zoom == self.max_tile_size:
                 d.text(pnt, tag.name, fill=(0,0,0))
             d.ellipse([pnt.x - circle_rad, pnt.y - circle_rad,
                    pnt.x + circle_rad, pnt.y + circle_rad],
@@ -122,7 +124,7 @@ def main():
         pass
     os.mkdir(TILES_DIR)
 
-    tiler = Tiler(get_tags_data(tsv_data_path))
+    tiler = Tiler(get_tags_data(tsv_data_path), max_tile_size)
 
     def tile_saver(x, y, tile_size):
         im, cnt_points = tiler.get_tile(x, y, tile_size)

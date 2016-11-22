@@ -9,6 +9,7 @@ DATA = ./data
 INTERIM = $(DATA)/interim
 PROCESSED = $(DATA)/processed
 BHTSNE = $(SRC)/models/use_bhtsne
+REV_BHTSNE = ../../../
 
 all:
 	@printf "Welcome to SOMap makefile!\n"
@@ -52,10 +53,10 @@ $(BHTSNE)/compute_nearest_neighbours: $(BHTSNE)/compute_nearest_neighbours.cpp
 # which t-SNE will use. The number of neighbours should be greater than
 # 3 * perplexity.
 $(INTERIM)/adj_id_to_nn_id.txt $(INTERIM)/nn_matrix.txt: $(BHTSNE)/compute_nearest_neighbours $(INTERIM)/adj_matrix.txt
-	cd $(BHTSNE) && ./compute_nearest_neighbours $(INTERIM)/adj_matrix.txt 155 $(INTERIM)/adj_id_to_nn_id.txt > $(INTERIM)/nn_matrix.txt
+	$(BHTSNE)/compute_nearest_neighbours $(INTERIM)/adj_matrix.txt 155 $(INTERIM)/adj_id_to_nn_id.txt > $(INTERIM)/nn_matrix.txt
 	
 $(INTERIM)/adj_id_to_nn_id_example.txt $(INTERIM)/nn_matrix_example.txt: $(BHTSNE)/compute_nearest_neighbours $(INTERIM)/adj_matrix_example.txt
-	cd $(BHTSNE) && ./compute_nearest_neighbours $(INTERIM)/adj_matrix_example.txt 155 $(INTERIM)/adj_id_to_nn_id_example.txt > $(INTERIM)/nn_matrix_example.txt
+	$(BHTSNE)/compute_nearest_neighbours $(INTERIM)/adj_matrix_example.txt 155 $(INTERIM)/adj_id_to_nn_id_example.txt > $(INTERIM)/nn_matrix_example.txt
 
 
 # Obtain mapping from id-s to names for tags.
