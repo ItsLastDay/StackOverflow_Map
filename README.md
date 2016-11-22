@@ -32,6 +32,7 @@ After installing all prerequisites, you may want to run our example dataset (con
 
 Then type (from the root of the repository)  
 `make visualize_example`  
+(NOTE: if this command fails, e.g. because some requirement is missing, you need to delete `./src/visualization/tsne_output_example.tsv` file in order to run `make visualize_example` again)  
 It should complete in a matter of minutes. Then go to `src/visualization` folder and start a server:  
 ```
 cd ./src/visualization
