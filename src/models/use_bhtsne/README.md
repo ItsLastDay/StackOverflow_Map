@@ -49,5 +49,4 @@ just like some result of euclidean distances computation. I'm positively sure th
 does not depend on triangle inequality, so using our skewed distances is OK.
 
 Since all edge weights are positive, we can run a truncated Dijkstra's algorithm to obtain any number of nearset neighbours
-for each vertex. I hope to implement it in something like O(N\*K\*logN) time, where N is the number of vertices, K is the number of nearest
-neighbours.
+for each vertex.
