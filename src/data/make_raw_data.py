@@ -20,7 +20,7 @@ for gzip is increasing from version to version,
 which looks promising.
 
 Example usage:
-    python3 make_dataset.py
+    python3 make_raw_data.py
 '''
 
 SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
