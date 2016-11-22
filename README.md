@@ -17,6 +17,13 @@ Our repository follows [cookiecutter](http://drivendata.github.io/cookiecutter-d
   `models/use_bhtsne` contains scripts that prepare data for using it in t-SNE, as well as a slightly rewritten version of [bhtsne](https://github.com/lvdmaaten/bhtsne).  
   `visualization` folder holds the last part of the equation - the frontend. 
   
+## Prerequisites
+
+Make sure you install every needed Python package from `requirements.txt`, e.g. via  
+`pip3 install -r requirements.txt`  
+(we use Python 3)  
+Aside from Python, `C++ 11` is employed in time-critical places. Make sure you have a suitable compiler (e.g. `gcc`).  
+The analysis is run via `Makefile`, so you need to have `make` installed. Our `Makefile` was tested on Ubuntu 16.04.
 
 
 ### Authors
