@@ -1,7 +1,7 @@
 # https://www.gnu.org/prep/standards/html_node/Makefile-Basics.html#Makefile-Basics
 SHELL = /bin/sh
 
-CPPFLAGS = -Wall -Werror --std=c++11 -O2 
+CPPFLAGS = --std=c++11 -O2 
 CPP = g++
 
 SRC = ./src
