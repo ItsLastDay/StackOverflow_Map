@@ -1,18 +1,45 @@
 #!/usr/bin/env python3
 
+import os
+import os.path
+import shutil
+
 import sys
 import csv
+
 from PIL import Image, ImageDraw, ImageOps
 from collections import namedtuple
-from multiprocessing import Pool
-import itertools
 
 from pyqtree import Index
 
+"""
+Read a file with <tag_name, x, y> triples and compute an image representation 
+for described points.
+
+This script creates so-called "tiles": many small images with grid-like arrangement.
+Tiles are well described in http://wiki.openstreetmap.org/wiki/Tiles.
+
+
+Input parameters:
+    1 - path to a tsv-file which describes points
+    2 - maximum zoom level for created tiles
+
+Output:
+    Writes output tiles to a directory `TILES_DIR`. Deletes everything in it beforehand.
+    Tiles are named `x_y_z.png`, where `z` is the zoom level, `x` and `y` are
+    tile coordinates (from 0 to 2**z - 1).
+
+
+Example usage:
+    python3 get_tiling.py tsne_output_example.tsv 5
+"""
+
+TILES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tiles')
+
 Point = namedtuple('Point', ['x', 'y'])
 
-def get_tags_data():
-    with open('tsne_out.tsv', newline='') as tsvfile:
+def get_tags_data(tsv_data_path):
+    with open(tsv_data_path, newline='') as tsvfile:
         reader = csv.DictReader(tsvfile, delimiter='\t')
         tags = []
         for row in reader:
@@ -87,12 +114,19 @@ class Tiler:
 
 
 def main():
-    max_tile_size = int(sys.argv[1]) if len(sys.argv) >= 2 else 8
-    tiler = Tiler(get_tags_data())
+    tsv_data_path = sys.argv[1]
+    max_tile_size = int(sys.argv[2]) 
+    try:
+        shutil.rmtree(TILES_DIR)
+    except FileNotFoundError:
+        pass
+    os.mkdir(TILES_DIR)
+
+    tiler = Tiler(get_tags_data(tsv_data_path))
 
     def tile_saver(x, y, tile_size):
         im, cnt_points = tiler.get_tile(x, y, tile_size)
-        fname = './tiles/{}_{}_{}.png'.format(x, y, tile_size)
+        fname = os.path.join(TILES_DIR, '{}_{}_{}.png'.format(x, y, tile_size))
         im = ImageOps.expand(im, border=Tiler.BORDER,fill='black')
         im.save(fname)
 
