@@ -195,7 +195,7 @@ private:
 int main(int argc, char** argv)
 {
     assert(argc == 4);
-    auto dij = dijkstra(argv[3]);
+    dijkstra dij(argv[3]);
     int num_of_neighbours = atoi(argv[2]);
     dij.read_graph(argv[1]);
 
