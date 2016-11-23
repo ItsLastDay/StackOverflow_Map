@@ -47,7 +47,7 @@ var tile = d3.tile()
 
 
 var zoom = d3.zoom()
-    .scaleExtent([1 << 8, 1 << 16])
+    .scaleExtent([1 << 8, 1 << 15])
     .on("zoom", zoomed);
 
 var svg = d3.select('body')
