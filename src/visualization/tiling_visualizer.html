@@ -93,7 +93,7 @@ function zoomed() {
             x = d[0],
             y = d[1];
             if(x < k && y < k) {
-                return "http://localhost:8000/tiles/" + x + "_" + y + "_" + z + ".png";
+                return "/tiles/" + x + "_" + y + "_" + z + ".png";
             }
       })
       .attr("x", function(d) { return d[0] * 256; })
