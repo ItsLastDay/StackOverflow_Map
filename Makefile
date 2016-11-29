@@ -1,6 +1,8 @@
 # https://www.gnu.org/prep/standards/html_node/Makefile-Basics.html#Makefile-Basics
 SHELL = /bin/sh
 
+POST_DATE = 2011-12-25
+
 CPPFLAGS = --std=c++11 -O2 
 CPP = g++
 
@@ -37,7 +39,7 @@ $(SRC)/data/compute_matrix: $(SRC)/data/compute_matrix.cpp
 # Compute an adjacency matrix for all tags.
 # http://stackoverflow.com/questions/19985936/current-working-directory-of-makefile
 $(INTERIM)/adj_matrix.txt: $(SRC)/data/compute_matrix $(INTERIM)/post_tag.csv
-	cd $(SRC)/data && ./compute_matrix
+	cd $(SRC)/data && ./compute_matrix $(POST_DATE)
 
 
 # Compute an adjacency matrix for example set of tags.
@@ -87,10 +89,10 @@ $(PROCESSED)/raw_tsne_output_example.txt: $(BHTSNE)/nearest_neighbour_bhtsne/run
 
 $(SRC)/visualization/tsne_output.tsv: $(PROCESSED)/raw_tsne_output.txt $(BHTSNE)/extract_tsv.py
 	python3 $(BHTSNE)/extract_tsv.py $(PROCESSED)/raw_tsne_output.txt > $(SRC)/visualization/tsne_output.tsv
-	python3 $(SRC)/visualization/get_tiling.py $(SRC)/visualization/tsne_output.tsv 7
+	python3 $(SRC)/visualization/get_tiling.py $(SRC)/visualization/tsne_output.tsv 7 $(POST_DATE)
 $(SRC)/visualization/tsne_output_example.tsv: $(PROCESSED)/raw_tsne_output_example.txt $(BHTSNE)/extract_tsv.py
 	python3 $(BHTSNE)/extract_tsv.py $(PROCESSED)/raw_tsne_output_example.txt > $(SRC)/visualization/tsne_output_example.tsv
-	python3 $(SRC)/visualization/get_tiling.py $(SRC)/visualization/tsne_output_example.tsv 5
+	python3 $(SRC)/visualization/get_tiling.py $(SRC)/visualization/tsne_output_example.tsv 5 
 
 
 visualize: $(SRC)/visualization/tsne_output.tsv

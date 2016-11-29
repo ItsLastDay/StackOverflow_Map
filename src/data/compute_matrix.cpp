@@ -22,7 +22,7 @@ using namespace std;
  * Only the higher-than-main-diagonal part is output.
  *
  * Input:
- *      1 - optional date in the form YYYY-MM-DD (e.g. 2008-08-01).
+ *      1 - date in the form YYYY-MM-DD (e.g. 2008-08-01).
  *          Only posts created later than this date will be considered.
  *
  * Time: less than two minutes.
@@ -106,11 +106,8 @@ namespace
 int main(int argc, char **argv)
 {
     uint64_t date_lower_bound_hash = 0;
-    if (argc > 1)
-    {
-        istringstream date_reader(argv[1]);
-        date_lower_bound_hash = get_date_hash(date_reader);
-    }
+    istringstream date_reader(argv[1]);
+    date_lower_bound_hash = get_date_hash(date_reader);
 
     read_posts_data();
     ifstream inp(post_tag_csv);

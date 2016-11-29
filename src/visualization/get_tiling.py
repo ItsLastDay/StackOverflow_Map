@@ -19,13 +19,20 @@ for described points.
 This script creates so-called "tiles": many small images with grid-like arrangement.
 Tiles are well described in http://wiki.openstreetmap.org/wiki/Tiles.
 
+This routine saves tiles according into folder parametrized by 
+input date. This date means the lowest date of any post that
+is used to compute tag similarity. This way, you can save
+multiple maps (referring to multiple dates) and compare them.
+
 
 Input parameters:
     1 - path to a tsv-file which describes points
     2 - maximum zoom level for created tiles
+    3 - lower bound on a date of any post that is used to compute tag similarity.
 
 Output:
-    Writes output tiles to a directory `TILES_DIR`. Deletes everything in it beforehand.
+    Writes output tiles to a directory `TILES_DIR` with appended posts date.
+    Deletes everything in it beforehand.
     Tiles are named `x_y_z.png`, where `z` is the zoom level, `x` and `y` are
     tile coordinates (from 0 to 2**z - 1).
 
@@ -118,6 +125,9 @@ class Tiler:
 def main():
     tsv_data_path = sys.argv[1]
     max_tile_size = int(sys.argv[2]) 
+    date_suffix = sys.argv[3]
+    TILES_DIR += date_suffix
+
     try:
         shutil.rmtree(TILES_DIR)
     except FileNotFoundError:
