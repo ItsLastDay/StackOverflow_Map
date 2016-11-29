@@ -69,6 +69,7 @@ with open(os.path.join(RAW_DATA_DIR, 'questions.csv'), 'r', newline='') as quest
             post_id = row[0]
             creation_date = row[1]
             writer.writerow([post_id, creation_date])
+        posts_csv_file.flush()
 
 
 with open(os.path.join(RAW_DATA_DIR, 'question_tags.csv'), 'r', newline='') as question_tags_file:
@@ -87,6 +88,7 @@ with open(os.path.join(RAW_DATA_DIR, 'question_tags.csv'), 'r', newline='') as q
         for i, tag in enumerate(tags, 1):
             tag_to_id_mapping[tag] = i
             writer.writerow([i, tag])
+        tags_csv_file.flush()
 
 
 
@@ -115,7 +117,7 @@ with open(os.path.join(RAW_DATA_DIR, 'question_tags.csv'), 'r', newline='') as q
             queue.append((post_id, tag))
             if len(queue) > MAX_QUEUE_SIZE:
                 queue.pop(0)
-
+        post_tag_csv_file.flush()
 
 
 
