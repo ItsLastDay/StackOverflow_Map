@@ -16,6 +16,16 @@
     left: 0;
 }
 
+.menu_class {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    background: white;
+    width: 15%;
+    height: 15%;
+};
+
 body {
   margin: 0;
   overflow: hidden;
@@ -27,10 +37,38 @@ body {
 <body>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://d3js.org/d3-tile.v0.0.min.js"></script>
+
+<!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">-->
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+
+<div id="menu" class="menu_class">
+    <select id="tile_selector_dropdown" onChange="switch_selected_folder(this)"></select>
+</div>
+
 <script>
 /*
 This script is based on http://bl.ocks.org/mbostock/5914438
 */
+
+var selected_folder = null;
+// Get all `tiles{something}` entries from the directory listing.
+$.get('/').done(function(listing_html)
+    {
+        var tiles_search_re = new RegExp("href=\"(tiles.*?)/\"", "g");//"/href=\"(tilles.*?)\/\"/g";
+        var tile_matches = [];
+        var x;
+        while ((x = tiles_search_re.exec(listing_html)) != null)
+        {
+            // Save only captured group.
+            tile_matches.push(x[1]);
+        }
+
+        populate_menu_dropdown(tile_matches);
+        main();
+    }
+);
 
 var pi = Math.PI,
     tau = 2 * pi;
@@ -61,12 +99,15 @@ var raster = svg.append("g");
 
 var center = [0, 0];
 
-svg
-  .call(zoom)
-  .call(zoom.transform, d3.zoomIdentity
-      .translate(width / 2, height / 2)
-      .scale(1 << 10)
-      .translate(-center[0], -center[1]));
+function main()
+{
+    svg
+      .call(zoom)
+      .call(zoom.transform, d3.zoomIdentity
+          .translate(width / 2, height / 2)
+          .scale(1 << 10)
+          .translate(-center[0], -center[1]));
+}
 
 
 function zoomed() {
@@ -76,7 +117,7 @@ function zoomed() {
       .scale(transform.k)
       .translate([transform.x, transform.y])
       ();
-  console.log(tiles);
+  //console.log(tiles);
 
   var image = raster
       .attr("transform", stringify(tiles.scale, tiles.translate))
@@ -93,7 +134,7 @@ function zoomed() {
             x = d[0],
             y = d[1];
             if(x < k && y < k) {
-                return "/tiles/" + x + "_" + y + "_" + z + ".png";
+                return "/" + selected_folder + "/" + x + "_" + y + "_" + z + ".png";
             }
       })
       .attr("x", function(d) { return d[0] * 256; })
@@ -105,6 +146,31 @@ function zoomed() {
 function stringify(scale, translate) {
   var k = scale / 256, r = scale % 1 ? Number : Math.round;
   return "translate(" + r(translate[0] * scale) + "," + r(translate[1] * scale) + ") scale(" + k + ")";
+}
+
+function switch_selected_folder(dropdown)
+{
+    var value = dropdown.value;
+    selected_folder = value;
+    // Need to reload all tiles. They do not reload without scaling
+    // (because tiles are loaded by `zoomed` callback), so scale
+    // two times to obtain the same view, but on different tile set.
+    svg.call(zoom.scaleBy, 0.5);
+    svg.call(zoom.scaleBy, 2);
+}
+
+function populate_menu_dropdown(tile_matches)
+{
+    // http://www.w3schools.com/jsref/met_select_add.asp
+    var x = document.getElementById("tile_selector_dropdown");
+    for (var i = 0; i < tile_matches.length; i++)
+    {
+        var folder_name = tile_matches[i];
+        var opt = document.createElement("option");
+        opt.value = opt.text = folder_name;
+        x.add(opt);
+    }
+    selected_folder = tile_matches[0];
 }
 
 </script>
