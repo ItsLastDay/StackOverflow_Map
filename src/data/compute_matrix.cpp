@@ -1,11 +1,15 @@
-#include <iostream>
+#include <cassert>
 #include <cstring>
-#include <algorithm>
+
+#include <iostream>
 #include <sstream>
 #include <fstream>
 #include <string>
+
 #include <unordered_map>
+#include <algorithm>
 #include <vector>
+
 using namespace std;
 
 /*
@@ -17,6 +21,10 @@ using namespace std;
  *
  * Only the higher-than-main-diagonal part is output.
  *
+ * Input:
+ *      1 - optional date in the form YYYY-MM-DD (e.g. 2008-08-01).
+ *          Only posts created later than this date will be considered.
+ *
  * Time: less than two minutes.
  *
  * */
@@ -24,12 +32,14 @@ using namespace std;
 namespace
 {
     const string post_tag_csv = "../../data/interim/post_tag.csv";
+    const string posts_data_csv = "../../data/interim/posts.csv";
     const string out_file = "../../data/interim/adj_matrix.txt";
 
     vector<int> row_count;
 
     unordered_map<int, vector<int>> post_to_tags;
     vector< pair<int, int> > tags_with_posts;
+    unordered_map<int, uint64_t> post_id_to_creation_hash;
 
     void print_row(ostream& out, int row_no)
     {
@@ -43,11 +53,66 @@ namespace
         }
         out << endl;
     }
-};
+
+    uint64_t get_date_hash(istringstream& ss)
+    {
+        /*
+         * Given a string reader `ss`, which is about
+         * to read a date in the form YYYY-MM-DD (e.g. 2008-08-01),
+         * return a number representation for this date (so we can
+         * compare numbers instead of strings).
+         */
+        int year, month, day;
+        char delim;
+        ss >> year >> delim >> month >> delim >> day;
+        return static_cast<uint64_t>(year) * 4000 + month * 40 + day;
+    }
+
+    void read_posts_data()
+    {
+        /*
+         * Read .csv file with information about posts. 
+         *
+         * Example:
+         *
+         *   Id,CreationDate
+         *   1,2008-07-31T21:26:37Z
+         *   4,2008-07-31T21:42:52Z
+         *   6,2008-07-31T22:08:08Z
+         *   8,2008-07-31T23:33:19Z
+         *   ...
+         */
+        ifstream post_data(posts_data_csv);
+        string current_line;
+
+        getline(post_data, current_line);
+
+        while (getline(post_data, current_line))
+        {
+            int post_id;
+            istringstream ss(current_line);
+
+            ss >> post_id;
+            ss.ignore(1);
+            uint64_t date_hash = get_date_hash(ss);
+
+            post_id_to_creation_hash[post_id] = date_hash;
+        }
+
+    }
+} // anon namespace
 
 
-int main()
+int main(int argc, char **argv)
 {
+    uint64_t date_lower_bound_hash = 0;
+    if (argc > 1)
+    {
+        istringstream date_reader(argv[1]);
+        date_lower_bound_hash = get_date_hash(date_reader);
+    }
+
+    read_posts_data();
     ifstream inp(post_tag_csv);
     ofstream out(out_file);
     string current_line;
@@ -65,6 +130,13 @@ int main()
         ss >> post_id;
         ss.ignore(1);
         ss >> tag_id;
+
+        assert (post_id_to_creation_hash.count(post_id));
+        if (post_id_to_creation_hash[post_id] <= date_lower_bound_hash)
+        {
+            // Disregard posts earlier than certain date.
+            continue;
+        }
 
         post_to_tags[post_id].push_back(tag_id);
         max_tag_id = max(max_tag_id, tag_id);
