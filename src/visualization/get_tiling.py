@@ -123,10 +123,12 @@ class Tiler:
 
 
 def main():
+    global TILES_DIR
+
     tsv_data_path = sys.argv[1]
     max_tile_size = int(sys.argv[2]) 
     date_suffix = sys.argv[3]
-    TILES_DIR += date_suffix
+    TILES_DIR += '_' + date_suffix
 
     try:
         shutil.rmtree(TILES_DIR)

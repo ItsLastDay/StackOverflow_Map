@@ -33,7 +33,8 @@ namespace
 {
     const string post_tag_csv = "../../data/interim/post_tag.csv";
     const string posts_data_csv = "../../data/interim/posts.csv";
-    const string out_file = "../../data/interim/adj_matrix.txt";
+    const string out_file_prefix = "../../data/interim/adj_matrix_";
+    const string out_file_suffix = ".txt";
 
     vector<int> row_count;
 
@@ -107,11 +108,12 @@ int main(int argc, char **argv)
 {
     uint64_t date_lower_bound_hash = 0;
     istringstream date_reader(argv[1]);
+    cout << "Generating an adjacency matrix using posts later than " << argv[1] << endl;
     date_lower_bound_hash = get_date_hash(date_reader);
 
     read_posts_data();
     ifstream inp(post_tag_csv);
-    ofstream out(out_file);
+    ofstream out(out_file_prefix + string(argv[1]) + out_file_suffix);
     string current_line;
     int post_id, tag_id;
 
