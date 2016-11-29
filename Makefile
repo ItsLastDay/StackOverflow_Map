@@ -38,7 +38,7 @@ $(SRC)/data/compute_matrix: $(SRC)/data/compute_matrix.cpp
 
 # Compute an adjacency matrix for all tags.
 # http://stackoverflow.com/questions/19985936/current-working-directory-of-makefile
-$(INTERIM)/adj_matrix_$(POST_DATE).txt: $(SRC)/data/compute_matrix $(INTERIM)/post_tag.csv
+$(INTERIM)/adj_matrix_$(POST_DATE).txt $(INTERIM)/post_count_$(POST_DATE).csv: $(SRC)/data/compute_matrix $(INTERIM)/post_tag.csv
 	cd $(SRC)/data && ./compute_matrix $(POST_DATE)
 
 
@@ -62,15 +62,15 @@ $(INTERIM)/adj_id_to_nn_id_example.txt $(INTERIM)/nn_matrix_example.txt: $(BHTSN
 
 
 # Obtain mapping from id-s to names for tags.
-$(INTERIM)/id_to_tag_name_$(POST_DATE).txt: $(INTERIM)/adj_id_to_nn_id_$(POST_DATE).txt $(BHTSNE)/merge_mappings.py $(INTERIM)/tags.csv
-	$(BHTSNE)/merge_mappings.py $< $(INTERIM)/tags.csv > $@
-$(INTERIM)/id_to_tag_name_example.txt: $(INTERIM)/adj_id_to_nn_id_example.txt $(BHTSNE)/merge_mappings.py 
+$(PROCESSED)/id_to_additional_info_$(POST_DATE).csv: $(INTERIM)/adj_id_to_nn_id_$(POST_DATE).txt $(BHTSNE)/merge_mappings.py $(INTERIM)/tags.csv $(INTERIM)/post_count_$(POST_DATE).csv
+	$(BHTSNE)/merge_mappings.py $< $(INTERIM)/tags.csv $(INTERIM)/post_count_$(POST_DATE).csv > $@
+$(PROCESSED)/id_to_additional_info_example.csv: $(INTERIM)/adj_id_to_nn_id_example.txt $(BHTSNE)/merge_mappings.py 
 	$(BHTSNE)/merge_mappings.py $< $(DATA)/example/data_stackexchange_tags.csv > $@
 
 
 # Obtain all data needed for t-SNE run
-data: $(DATA)/raw/questions.csv $(DATA)/raw/question_tags.csv $(INTERIM)/nn_matrix_$(POST_DATE).txt $(INTERIM)/id_to_tag_name_$(POST_DATE).txt
-data_example: $(INTERIM)/nn_matrix_example.txt $(INTERIM)/id_to_tag_name_example.txt
+data: $(DATA)/raw/questions.csv $(DATA)/raw/question_tags.csv $(INTERIM)/nn_matrix_$(POST_DATE).txt $(INTERIM)/id_to_additional_info_$(POST_DATE).txt
+data_example: $(INTERIM)/nn_matrix_example.txt $(INTERIM)/id_to_additional_info_example.txt
 
 
 
@@ -81,18 +81,18 @@ $(BHTSNE)/nearest_neighbour_bhtsne/bh_tsne: $(BHTSNE)/nearest_neighbour_bhtsne/t
 
 
 # Run a rewritten version of `bhtsne` on out nearest neighbour matrix.
-$(PROCESSED)/raw_tsne_output_$(POST_DATE).txt: $(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(BHTSNE)/nearest_neighbour_bhtsne/bh_tsne $(INTERIM)/nn_matrix_$(POST_DATE).txt $(INTERIM)/id_to_tag_name_$(POST_DATE).txt
-	$(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(INTERIM)/nn_matrix_$(POST_DATE).txt $(INTERIM)/id_to_tag_name_$(POST_DATE).txt > $@
-$(PROCESSED)/raw_tsne_output_example.txt: $(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(BHTSNE)/nearest_neighbour_bhtsne/bh_tsne $(INTERIM)/nn_matrix_example.txt $(INTERIM)/id_to_tag_name_example.txt
-	$(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(INTERIM)/nn_matrix_example.txt $(INTERIM)/id_to_tag_name_example.txt > $@
+$(PROCESSED)/raw_tsne_output_$(POST_DATE).txt: $(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(BHTSNE)/nearest_neighbour_bhtsne/bh_tsne $(INTERIM)/nn_matrix_$(POST_DATE).txt 
+	$(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(INTERIM)/nn_matrix_$(POST_DATE).txt > $@
+$(PROCESSED)/raw_tsne_output_example.txt: $(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(BHTSNE)/nearest_neighbour_bhtsne/bh_tsne $(INTERIM)/nn_matrix_example.txt
+	$(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(INTERIM)/nn_matrix_example.txt > $@
 
 
-$(SRC)/visualization/tsne_output_$(POST_DATE).tsv: $(PROCESSED)/raw_tsne_output_$(POST_DATE).txt $(BHTSNE)/extract_tsv.py
+$(SRC)/visualization/tsne_output_$(POST_DATE).tsv: $(PROCESSED)/raw_tsne_output_$(POST_DATE).txt $(BHTSNE)/extract_tsv.py $(PROCESSED)/id_to_additional_info_$(POST_DATE).csv
 	python3 $(BHTSNE)/extract_tsv.py $(PROCESSED)/raw_tsne_output_$(POST_DATE).txt > $@
-	python3 $(SRC)/visualization/get_tiling.py $@ 7 $(POST_DATE)
-$(SRC)/visualization/tsne_output_example.tsv: $(PROCESSED)/raw_tsne_output_example.txt $(BHTSNE)/extract_tsv.py
+	python3 $(SRC)/visualization/get_tiling.py $@ $(PROCESSED)/id_to_additional_info_$(POST_DATE).csv 7 $(POST_DATE)
+$(SRC)/visualization/tsne_output_example.tsv: $(PROCESSED)/raw_tsne_output_example.txt $(BHTSNE)/extract_tsv.py $(PROCESSED)/id_to_additional_info_example.csv
 	python3 $(BHTSNE)/extract_tsv.py $(PROCESSED)/raw_tsne_output_example.txt > $(SRC)/visualization/tsne_output_example.tsv
-	python3 $(SRC)/visualization/get_tiling.py $(SRC)/visualization/tsne_output_example.tsv 5 example
+	python3 $(SRC)/visualization/get_tiling.py $(SRC)/visualization/tsne_output_example.tsv $(PROCESSED)/id_to_additional_info_example.csv 5 example
 
 
 visualize: $(SRC)/visualization/tsne_output_$(POST_DATE).tsv

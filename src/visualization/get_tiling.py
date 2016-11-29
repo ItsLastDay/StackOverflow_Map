@@ -27,6 +27,7 @@ multiple maps (referring to multiple dates) and compare them.
 
 Input parameters:
     1 - path to a tsv-file which describes points
+    2 - path to a csv-file with additional information about points
     2 - maximum zoom level for created tiles
     3 - lower bound on a date of any post that is used to compute tag similarity.
 
@@ -38,27 +39,31 @@ Output:
 
 
 Example usage:
-    python3 get_tiling.py tsne_output_example.tsv 5
+    python3 get_tiling.py tsne_output_example.tsv id_to_additional_info_example.csv 5 example
 """
 
 TILES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tiles')
 
 Point = namedtuple('Point', ['x', 'y'])
 
-def get_tags_data(tsv_data_path):
-    with open(tsv_data_path, newline='') as tsvfile:
-        reader = csv.DictReader(tsvfile, delimiter='\t')
-        tags = []
-        for row in reader:
-            tags.append(Tag(float(row['x']), float(row['y']), row['name']))
+def get_tags_data(tsv_data_path, additional_data_path):
+    with open(additional_data_path, 'r', newline='') as additional_info_file:
+        additional_reader = csv.DictReader(additional_info_file)
+        with open(tsv_data_path, 'r', newline='') as tsvfile:
+            reader = csv.DictReader(tsvfile, delimiter='\t')
+            tags = []
+            for row, add_info in zip(reader, additional_reader):
+                flat_addinfo = [(name, add_info[name]) for name in additional_reader.fieldnames]
+                tags.append(Tag(float(row['x']), float(row['y']), *flat_addinfo))
 
-        return tags
+            return tags
 
 class Tag:
-    def __init__(self, x, y, name):
+    def __init__(self, x, y, *additional_info):
         self.x = x
         self.y = y
-        self.name = name
+        for field_name, field_val in additional_info:
+            self.__dict__[field_name] = field_val
 
 
 class Tiler:
@@ -74,6 +79,11 @@ class Tiler:
 
         self.max_y = max((tag.y for tag in tags)) + self.SHIFT
         self.min_y = min((tag.y for tag in tags)) - self.SHIFT
+
+        try:
+            self.max_post_count = max(int(tag.PostCount) for tag in tags)
+        except AttributeError:
+            pass
 
         self.tag_spatial_index = Index(bbox=(self.min_x, self.min_y, self.max_x, self.max_y))
         for tag in tags:
@@ -114,9 +124,11 @@ class Tiler:
 
             if zoom == self.max_tile_size:
                 d.text(pnt, tag.name, fill=(0,0,0))
+
+            red_extent = int(255 * (int(getattr(tag, 'PostCount', 0)) / int(getattr(self, 'max_post_count', 1))))
             d.ellipse([pnt.x - circle_rad, pnt.y - circle_rad,
                    pnt.x + circle_rad, pnt.y + circle_rad],
-                   fill=(0, 0, 255))
+                   fill=(red_extent, 0, 255))
             cnt_points += 1
 
         return im, cnt_points
@@ -126,8 +138,9 @@ def main():
     global TILES_DIR
 
     tsv_data_path = sys.argv[1]
-    max_tile_size = int(sys.argv[2]) 
-    date_suffix = sys.argv[3]
+    additional_data_path = sys.argv[2]
+    max_tile_size = int(sys.argv[3])
+    date_suffix = sys.argv[4]
     TILES_DIR += '_' + date_suffix
 
     try:
@@ -136,7 +149,7 @@ def main():
         pass
     os.mkdir(TILES_DIR)
 
-    tiler = Tiler(get_tags_data(tsv_data_path), max_tile_size)
+    tiler = Tiler(get_tags_data(tsv_data_path, additional_data_path), max_tile_size)
 
     def tile_saver(x, y, tile_size):
         im, cnt_points = tiler.get_tile(x, y, tile_size)

@@ -51,7 +51,6 @@ public:
 
 
 private:
-    std::map<int, std::string> id_to_tagname;
     void computeGradient(double* P, unsigned int* inp_row_P, unsigned int* inp_col_P, double* inp_val_P, double* Y, int N, int D, double* dC, double theta);
     void computeExactGradient(double* P, double* Y, int N, int D, double* dC);
     double evaluateError(double* P, double* Y, int N, int D);

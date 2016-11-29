@@ -25,6 +25,10 @@ using namespace std;
  *      1 - date in the form YYYY-MM-DD (e.g. 2008-08-01).
  *          Only posts created later than this date will be considered.
  *
+ * Output:
+ *      - adjacency matrix
+ *      - .csv file with pairs <tag id, number of posts> 
+ *
  * Time: less than two minutes.
  *
  * */
@@ -33,26 +37,37 @@ namespace
 {
     const string post_tag_csv = "../../data/interim/post_tag.csv";
     const string posts_data_csv = "../../data/interim/posts.csv";
-    const string out_file_prefix = "../../data/interim/adj_matrix_";
-    const string out_file_suffix = ".txt";
+    const string matrix_out_file_prefix = "../../data/interim/adj_matrix_";
+    const string matrix_out_file_suffix = ".txt";
+
+    const string postcount_prefix = "../../data/interim/post_count_";
+    const string postcount_suffix = ".csv";
 
     vector<int> row_count;
+    uint32_t post_count;
 
     unordered_map<int, vector<int>> post_to_tags;
     vector< pair<int, int> > tags_with_posts;
     unordered_map<int, uint64_t> post_id_to_creation_hash;
 
-    void print_row(ostream& out, int row_no)
+    void print_row(ostream& matrix_out, ostream& postcount_out, int row_no)
     {
-        out << row_no << ": ";
+        matrix_out << row_no << ": ";
         for (size_t i = 0; i < row_count.size(); i++)
         {
+            post_count += row_count[i];
             if (row_count[i] > 0)
             {
-                out << i << "," << row_count[i] << " ";
+                matrix_out << i << "," << row_count[i] << " ";
             }
         }
-        out << endl;
+
+        if (post_count > 0)
+        {
+            postcount_out << row_no << "," << post_count << endl;
+        }
+
+        matrix_out << endl;
     }
 
     uint64_t get_date_hash(istringstream& ss)
@@ -111,9 +126,12 @@ int main(int argc, char **argv)
     cout << "Generating an adjacency matrix using posts later than " << argv[1] << endl;
     date_lower_bound_hash = get_date_hash(date_reader);
 
+    ofstream postcount_out(postcount_prefix + string(argv[1]) + postcount_suffix);
+    postcount_out << "Id,PostCount" << endl;
+
     read_posts_data();
     ifstream inp(post_tag_csv);
-    ofstream out(out_file_prefix + string(argv[1]) + out_file_suffix);
+    ofstream out(matrix_out_file_prefix + string(argv[1]) + matrix_out_file_suffix);
     string current_line;
     int post_id, tag_id;
 
@@ -146,6 +164,7 @@ int main(int argc, char **argv)
 
     sort(tags_with_posts.begin(), tags_with_posts.end());
     row_count.resize(max_tag_id);
+    post_count = 0;
 
     size_t sz = tags_with_posts.size();
     for (size_t i = 0; i < sz; i++)
@@ -153,9 +172,10 @@ int main(int argc, char **argv)
         if (i > 0 and tags_with_posts[i - 1].first != tags_with_posts[i].first)
         {
             // Encountered a new tag.
-            print_row(out, tags_with_posts[i - 1].first);
+            print_row(out, postcount_out, tags_with_posts[i - 1].first);
             row_count.clear();
             row_count.resize(max_tag_id);
+            post_count = 0;
         }
 
         post_id = tags_with_posts[i].second;
@@ -165,8 +185,9 @@ int main(int argc, char **argv)
         {
             if (neighbour_tag > tag_id)
                 ++row_count[neighbour_tag];
+            ++post_count;
         }
     }
-    print_row(out, tags_with_posts.back().first);
+    print_row(out, postcount_out, tags_with_posts.back().first);
     return 0;
 }
