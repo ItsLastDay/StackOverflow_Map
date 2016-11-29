@@ -63,6 +63,10 @@ Hooray, you now see a full set of tags!
 Check out a video demonstration (click to play):  
 [![Click to play on youtube](https://img.youtube.com/vi/mj90I_i6HNo/0.jpg)](https://www.youtube.com/watch?v=mj90I_i6HNo)
 
+Another video, which shows the ability to switch between maps corresponding to different POST_DATE's:
+[![Click to play on youtube](https://img.youtube.com/vi/ZrnjrMy2dA0/0.jpg)](https://www.youtube.com/watch?v=ZrnjrMy2dA0)
+
+
 ### Authors
 Mikhail Koltsov ([ItsLastDay](https://github.com/ItsLastDay))  
 Arkady Kalakutsky ([testlnord](https://github.com/testlnord))
