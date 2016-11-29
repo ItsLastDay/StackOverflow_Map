@@ -50,7 +50,9 @@ This will require **several hours** to complete. Then perform the steps describe
 cd ./src/visualization
 python3 -m http.server
 ```  
-Open [http://localhost:8000/tiling_visualizer.html](http://localhost:8000/tiling_visualizer.html) in your web browser.   Hooray, you now see a full set of tags!
+Open [http://localhost:8000/tiling_visualizer.html](http://localhost:8000/tiling_visualizer.html) in your web browser.   Hooray, you now see a full set of tags!  
+Check out a video demonstration (click to play):  
+[![Click to play on youtube](https://img.youtube.com/vi/mj90I_i6HNo/0.jpg)](https://www.youtube.com/watch?v=mj90I_i6HNo)
 
 ### Authors
 Mikhail Koltsov ([ItsLastDay](https://github.com/ItsLastDay))  
