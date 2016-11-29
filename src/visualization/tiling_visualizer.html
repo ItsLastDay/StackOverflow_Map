@@ -23,8 +23,13 @@
     z-index: 2;
     background: white;
     width: 15%;
-    height: 15%;
-};
+    height: 35%;
+    opacity: 0.5;
+}
+
+.menu_class:hover {
+    opacity: 1.0;
+}
 
 body {
   margin: 0;
@@ -44,6 +49,10 @@ body {
 
 
 <div id="menu" class="menu_class">
+<!--    
+    <p>x: <span id="x_pos"/> </p>
+    <p>y: <span id="y_pos"/> </p>
+-->
     <select id="tile_selector_dropdown" onChange="switch_selected_folder(this)"></select>
 </div>
 
@@ -95,6 +104,18 @@ var svg = d3.select('body')
       .attr("viewBox", "0 0 " + width + " " + height)
       .classed("svg-content-responsive", true);
 
+/*
+svg.on('mousemove', function() {
+    var coordinates = d3.mouse(this);
+    console.log(coordinates);
+    console.log(projection.invert(coordinates));
+    console.log(formatLocation(projection.invert(coordinates), zoom.scale));
+//    console.log(coordinates);
+    $("#x_pos").text(coordinates[0] / 256);
+    $("#y_pos").text(coordinates[1] / 256);
+});
+*/
+
 var raster = svg.append("g");
 
 var center = [0, 0];
@@ -117,7 +138,6 @@ function zoomed() {
       .scale(transform.k)
       .translate([transform.x, transform.y])
       ();
-  //console.log(tiles);
 
   var image = raster
       .attr("transform", stringify(tiles.scale, tiles.translate))
