@@ -101,3 +101,5 @@ visualize_example: $(SRC)/visualization/tsne_output_example.tsv
 # https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html
 # "A phony target should not be a prerequisite of a real target file; if it is, its recipe will be run every time make goes to update that file. As long as a phony target is never a prerequisite of a real target, the phony target recipe will be executed only when the phony target is a specified goal".
 .PHONY: all data raw_data data_example visualize visualize_example
+
+.DELETE_ON_ERROR: 
