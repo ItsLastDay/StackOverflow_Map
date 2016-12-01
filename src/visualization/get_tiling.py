@@ -42,6 +42,9 @@ Example usage:
     python3 get_tiling.py tsne_output_example.tsv id_to_additional_info_example.csv 5 example
 """
 
+METATILE_SIZE = 8
+TILE_DIM = 256
+
 TILES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tiles')
 
 Point = namedtuple('Point', ['x', 'y'])
@@ -68,8 +71,7 @@ class Tag:
 
 class Tiler:
     SHIFT = 10
-    BORDER = 1
-    TILE_DIM = 256 - BORDER
+    BORDER = 0
 
     def __init__(self, tags, max_tile_size):
         self.max_tile_size = max_tile_size
@@ -95,11 +97,54 @@ class Tiler:
         self.size = max_size
 
 
+    def get_metatile(self, x, y, zoom):
+        ''' 
+        Get 8x8 rectangle of tiles, compute them at once.
+
+        Mostly copy-and-paste from the `get_tile` function.
+        '''
+        im = Image.new('RGB', (TILE_DIM * METATILE_SIZE, 
+            TILE_DIM * METATILE_SIZE), (200, 200, 200))
+        d = ImageDraw.Draw(im)
+
+        size_tile = self.size / (1 << zoom) * METATILE_SIZE
+        lower_left_corner = Point(self.origin.x + x * size_tile,
+                                  self.origin.y + y * size_tile)
+        circle_rad = zoom / 2
+        cnt_points = 0
+
+        # Match slightly more tags, so that circles from neighbouring tiles can be drawn partially.
+        tags_inside_tile = self.tag_spatial_index.intersect((lower_left_corner.x - self.SHIFT, 
+                                                             lower_left_corner.y - self.SHIFT,
+                                                             lower_left_corner.x + size_tile + self.SHIFT, 
+                                                             lower_left_corner.y + size_tile + self.SHIFT))
+
+        for tag in tags_inside_tile:
+            x, y = tag.x, tag.y
+
+            # Get coords from tile origin, then scale to TILE_DIM
+            point_coords = Point(x - lower_left_corner.x, y - lower_left_corner.y)
+            pnt = Point(point_coords.x / size_tile * TILE_DIM * METATILE_SIZE,
+                        point_coords.y / size_tile * TILE_DIM * METATILE_SIZE)
+
+            if zoom >= 7:
+                d.text(pnt, tag.name, fill=(0,0,0))
+
+            red_extent = int(255 * (int(getattr(tag, 'PostCount', 0)) / int(getattr(self, 'max_post_count', 1))))
+            d.ellipse([pnt.x - circle_rad, pnt.y - circle_rad,
+                   pnt.x + circle_rad, pnt.y + circle_rad],
+                   fill=(red_extent, 0, 255))
+            cnt_points += 1
+
+        return im, cnt_points
+
+
+
     def get_tile(self, x, y, zoom):
         """
         Get one of 2^z * 2^z tiles, with coordinates (x, y) starting from zero.
         """
-        im = Image.new('RGB', (self.TILE_DIM, self.TILE_DIM), (200, 200, 200))
+        im = Image.new('RGB', (TILE_DIM, TILE_DIM), (200, 200, 200))
         d = ImageDraw.Draw(im)
 
         size_tile = self.size / (1 << zoom)
@@ -119,10 +164,10 @@ class Tiler:
 
             # Get coords from tile origin, then scale to TILE_DIM
             point_coords = Point(x - lower_left_corner.x, y - lower_left_corner.y)
-            pnt = Point(point_coords.x / size_tile * self.TILE_DIM,
-                        point_coords.y / size_tile * self.TILE_DIM)
+            pnt = Point(point_coords.x / size_tile * TILE_DIM,
+                        point_coords.y / size_tile * TILE_DIM)
 
-            if zoom == self.max_tile_size:
+            if zoom >= 7:
                 d.text(pnt, tag.name, fill=(0,0,0))
 
             red_extent = int(255 * (int(getattr(tag, 'PostCount', 0)) / int(getattr(self, 'max_post_count', 1))))

@@ -23,7 +23,7 @@
     z-index: 2;
     background: white;
     width: 15%;
-    height: 35%;
+    height: 15%;
     opacity: 0.5;
 }
 
@@ -38,6 +38,7 @@ body {
 
 
 </style>
+<title>Stack Overflow Map</title>
 
 <body>
 <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -53,6 +54,7 @@ body {
     <p>x: <span id="x_pos"/> </p>
     <p>y: <span id="y_pos"/> </p>
 -->
+    <p>cache size: <span id="cache_size"/> </p>
     <select id="tile_selector_dropdown" onChange="switch_selected_folder(this)"></select>
 </div>
 
@@ -61,11 +63,12 @@ body {
 This script is based on http://bl.ocks.org/mbostock/5914438
 */
 
+var cache_size = 0;
 var selected_folder = null;
 // Get all `tiles{something}` entries from the directory listing.
-$.get('/').done(function(listing_html)
+$.get('/get_tile_variants').done(function(listing_html)
     {
-        var tiles_search_re = new RegExp("href=\"(tiles.*?)/\"", "g");//"/href=\"(tilles.*?)\/\"/g";
+        var tiles_search_re = new RegExp("(tiles[^<]*)", "g");
         var tile_matches = [];
         var x;
         while ((x = tiles_search_re.exec(listing_html)) != null)
@@ -94,7 +97,7 @@ var tile = d3.tile()
 
 
 var zoom = d3.zoom()
-    .scaleExtent([1 << 8, 1 << 15])
+    .scaleExtent([1 << 8, 1 << 20])
     .on("zoom", zoomed);
 
 var svg = d3.select('body')
@@ -132,6 +135,10 @@ function main()
 
 
 function zoomed() {
+    $.get('/cache_size').done(function(cache_size)
+    {
+        $('#cache_size').text(cache_size);
+    });
   var transform = d3.event.transform;
 
   var tiles = tile
