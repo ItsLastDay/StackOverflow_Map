@@ -7,7 +7,7 @@ import shutil
 import sys
 import csv
 
-from PIL import Image, ImageDraw, ImageOps
+from PIL import Image, ImageDraw, ImageOps, ImageFont
 from collections import namedtuple
 
 from pyqtree import Index
@@ -96,6 +96,16 @@ class Tiler:
         max_size = max(self.max_x - self.min_x, self.max_y - self.min_y)
         self.size = max_size
 
+        self.font = ImageFont.truetype('./Verdana.ttf', 25)
+
+    
+    def get_postcount_measure(self, tag):
+        if not hasattr(tag, 'PostCount'):
+            return 1
+        tag_count = int(tag.PostCount)
+        max_post_count = self.max_post_count
+        return tag_count / max_post_count
+
 
     def get_metatile(self, x, y, zoom):
         ''' 
@@ -104,13 +114,13 @@ class Tiler:
         Mostly copy-and-paste from the `get_tile` function.
         '''
         im = Image.new('RGB', (TILE_DIM * METATILE_SIZE, 
-            TILE_DIM * METATILE_SIZE), (200, 200, 200))
+            TILE_DIM * METATILE_SIZE), (240, 240, 240))
         d = ImageDraw.Draw(im)
 
         size_tile = self.size / (1 << zoom) * METATILE_SIZE
         lower_left_corner = Point(self.origin.x + x * size_tile,
                                   self.origin.y + y * size_tile)
-        circle_rad = zoom / 2
+        max_circle_rad = zoom * 2
         cnt_points = 0
 
         # Match slightly more tags, so that circles from neighbouring tiles can be drawn partially.
@@ -128,12 +138,14 @@ class Tiler:
                         point_coords.y / size_tile * TILE_DIM * METATILE_SIZE)
 
             if zoom >= 7:
-                d.text(pnt, tag.name, fill=(0,0,0))
+                d.text(pnt, tag.name, fill=(0,0,0), font=self.font)
 
-            red_extent = int(255 * (int(getattr(tag, 'PostCount', 0)) / int(getattr(self, 'max_post_count', 1))))
+            post_count_measure = self.get_postcount_measure(tag)
+            circle_rad = max(1, max_circle_rad * post_count_measure)
+
             d.ellipse([pnt.x - circle_rad, pnt.y - circle_rad,
                    pnt.x + circle_rad, pnt.y + circle_rad],
-                   fill=(red_extent, 0, 255))
+                   fill=(0, 0, 255))
             cnt_points += 1
 
         return im, cnt_points
