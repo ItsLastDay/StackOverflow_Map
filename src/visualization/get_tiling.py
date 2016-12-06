@@ -126,9 +126,10 @@ class Tiler:
                                                              lower_left_corner.x + size_tile + self.SHIFT, 
                                                              lower_left_corner.y + size_tile + self.SHIFT))
 
-        max_postcount_in_this_tile = 0
-        for tag in tags_inside_tile:
-            max_postcount_in_this_tile = max(max_postcount_in_this_tile, tag.PostCount)
+        all_postcounts = sorted([tag.PostCount for tag in tags_inside_tile])
+        percentile_cutoff = all_postcounts[max(-10, -len(all_postcounts))]
+        percentile_cutoff = max(percentile_cutoff, 0)
+
 
         for tag in tags_inside_tile:
             x, y = tag.x, tag.y
@@ -138,7 +139,7 @@ class Tiler:
             pnt = Point(point_coords.x / size_tile * TILE_DIM * METATILE_SIZE,
                         point_coords.y / size_tile * TILE_DIM * METATILE_SIZE)
 
-            if zoom >= 7 or tag.PostCount >= max_postcount_in_this_tile * 0.9:
+            if zoom >= 7 or tag.PostCount >= percentile_cutoff:
                 d.text(pnt, tag.name, fill=(0,0,0), font=self.fonts[zoom])
 
             post_count_measure = self.get_postcount_measure(tag)
