@@ -4,6 +4,8 @@ import re
 import io
 import random
 
+from PIL import Image
+
 import os
 import os.path
 
@@ -20,7 +22,7 @@ ADDITIONAL_INFO_FMT = os.path.join(PROCESSED_DIR, 'id_to_additional_info_{}.csv'
 
 
 tile_cache = dict()
-MAX_CACHE_SIZE = 256
+MAX_CACHE_SIZE = 10
 
 
 def get_key(suffix, x, y, z):
@@ -31,11 +33,12 @@ def cache_get(suffix, x, y, z):
     return tile_cache.get(key, None)
 
 def cache_put(suffix, x, y, z, img):
+    global tile_cache
     key = get_key(suffix, x, y, z)
     if key in tile_cache:
         return
     if len(tile_cache) > MAX_CACHE_SIZE:
-        tile_cache.pop(random.choice(tile_cache.keys()))
+        tile_cache = dict()
 
     tile_cache[key] = img
 
@@ -107,8 +110,9 @@ def get_mt_part(x, y, img):
                         shift_y * t_dim + t_dim
                         ))
 
+    cropped = cropped.resize((get_tiling.TILE_DIM // 2, get_tiling.TILE_DIM // 2), resample=Image.LANCZOS)
     str_file = io.BytesIO()
-    cropped.save(str_file, format='png')
+    cropped.save(str_file, format='png', optimize=True)
 
     response = make_response(str_file.getvalue())
     response.mimetype = 'image/png'

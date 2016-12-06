@@ -43,7 +43,7 @@ Example usage:
 """
 
 METATILE_SIZE = 8
-TILE_DIM = 256
+TILE_DIM = 512
 
 TILES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tiles')
 
@@ -82,10 +82,9 @@ class Tiler:
         self.max_y = max((tag.y for tag in tags)) + self.SHIFT
         self.min_y = min((tag.y for tag in tags)) - self.SHIFT
 
-        try:
-            self.max_post_count = max(int(tag.PostCount) for tag in tags)
-        except AttributeError:
-            pass
+        for tag in tags:
+            tag.PostCount = int(getattr(tag, 'PostCount', -1))
+        self.max_post_count = max(int(tag.PostCount) for tag in tags)
 
         self.tag_spatial_index = Index(bbox=(self.min_x, self.min_y, self.max_x, self.max_y))
         for tag in tags:
@@ -96,13 +95,11 @@ class Tiler:
         max_size = max(self.max_x - self.min_x, self.max_y - self.min_y)
         self.size = max_size
 
-        self.font = ImageFont.truetype('./Verdana.ttf', 25)
+        self.fonts = [ImageFont.truetype('./Verdana.ttf', 50 - zoom * 2) for zoom in range(8 + 1)]
 
     
     def get_postcount_measure(self, tag):
-        if not hasattr(tag, 'PostCount'):
-            return 1
-        tag_count = int(tag.PostCount)
+        tag_count = tag.PostCount
         max_post_count = self.max_post_count
         return tag_count / max_post_count
 
@@ -120,7 +117,7 @@ class Tiler:
         size_tile = self.size / (1 << zoom) * METATILE_SIZE
         lower_left_corner = Point(self.origin.x + x * size_tile,
                                   self.origin.y + y * size_tile)
-        max_circle_rad = zoom * 2
+        max_circle_rad = zoom * 4
         cnt_points = 0
 
         # Match slightly more tags, so that circles from neighbouring tiles can be drawn partially.
@@ -128,6 +125,10 @@ class Tiler:
                                                              lower_left_corner.y - self.SHIFT,
                                                              lower_left_corner.x + size_tile + self.SHIFT, 
                                                              lower_left_corner.y + size_tile + self.SHIFT))
+
+        max_postcount_in_this_tile = 0
+        for tag in tags_inside_tile:
+            max_postcount_in_this_tile = max(max_postcount_in_this_tile, tag.PostCount)
 
         for tag in tags_inside_tile:
             x, y = tag.x, tag.y
@@ -137,11 +138,11 @@ class Tiler:
             pnt = Point(point_coords.x / size_tile * TILE_DIM * METATILE_SIZE,
                         point_coords.y / size_tile * TILE_DIM * METATILE_SIZE)
 
-            if zoom >= 7:
-                d.text(pnt, tag.name, fill=(0,0,0), font=self.font)
+            if zoom >= 7 or tag.PostCount >= max_postcount_in_this_tile * 0.9:
+                d.text(pnt, tag.name, fill=(0,0,0), font=self.fonts[zoom])
 
             post_count_measure = self.get_postcount_measure(tag)
-            circle_rad = max(1, max_circle_rad * post_count_measure)
+            circle_rad = max(2, max_circle_rad * post_count_measure)
 
             d.ellipse([pnt.x - circle_rad, pnt.y - circle_rad,
                    pnt.x + circle_rad, pnt.y + circle_rad],
