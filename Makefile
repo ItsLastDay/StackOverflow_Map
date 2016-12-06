@@ -92,7 +92,7 @@ $(SRC)/visualization/tsne_output_$(POST_DATE).tsv: $(PROCESSED)/raw_tsne_output_
 	python3 $(SRC)/visualization/get_tiling.py $@ $(PROCESSED)/id_to_additional_info_$(POST_DATE).csv 7 $(POST_DATE)
 $(SRC)/visualization/tsne_output_example.tsv: $(PROCESSED)/raw_tsne_output_example.txt $(BHTSNE)/extract_tsv.py $(PROCESSED)/id_to_additional_info_example.csv
 	python3 $(BHTSNE)/extract_tsv.py $(PROCESSED)/raw_tsne_output_example.txt > $(SRC)/visualization/tsne_output_example.tsv
-	python3 $(SRC)/visualization/get_tiling.py $(SRC)/visualization/tsne_output_example.tsv $(PROCESSED)/id_to_additional_info_example.csv 5 example
+	python3 $(SRC)/visualization/get_tiling.py $(SRC)/visualization/tsne_output_example.tsv $(PROCESSED)/id_to_additional_info_example.csv 7 example
 
 
 visualize: $(SRC)/visualization/tsne_output_$(POST_DATE).tsv
