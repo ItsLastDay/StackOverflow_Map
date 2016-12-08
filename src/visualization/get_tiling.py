@@ -182,7 +182,7 @@ class Tiler:
 
             draw.ellipse([pnt.x - circle_rad, pnt.y - circle_rad,
                    pnt.x + circle_rad, pnt.y + circle_rad],
-                   fill=(0,0,100))
+                   fill=(122, 176, 42))
 
             cnt_points += 1
 
@@ -191,7 +191,7 @@ class Tiler:
         for tag in tags_inside_tile:
             pnt = get_point_from_tag(tag)
             # Lighter text color for crowded areas, darker for lone areas.
-            fill = (255,0,0) if cnt_points >= 30000 else (0,0,255)
+            fill = (0, 0, 0)
             if zoom >= 7 or tag.PostCount >= percentile_cutoff:
                 draw.text(pnt, tag.name, fill=fill, font=self.fonts[zoom])
 
