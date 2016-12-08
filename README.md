@@ -40,9 +40,10 @@ cd ./src/visualization
 python3 -m http.server
 ```  
 As a final step, open [http://localhost:8000/tiling_visualizer.html](http://localhost:8000/tiling_visualizer.html) in your favourite web browser (NOTE: if port #8000 is already bound to something on your computer, you can specify another port, e.g. via `python3 -m http.server 1234`). You should see something like this:  
-![screen_small_mat_wide](https://cloud.githubusercontent.com/assets/6823298/20543474/fd363f1e-b116-11e6-876c-31124c40e976.jpg)  
-You can navigate on the map using mouse buttons and zoom via scroll button (NOTE: after a certain zoom level you won't see anything on a map - that is normal for an example).
-![screen_small_mat](https://cloud.githubusercontent.com/assets/6823298/20543477/025cc3b4-b117-11e6-8e4d-99ad35a68843.jpg)
+![example_8dec](https://cloud.githubusercontent.com/assets/6823298/21023205/9e44fe1a-bd90-11e6-9be9-1a8370d0aba9.png)
+
+You can navigate on the map using mouse buttons and zoom via scroll button.
+![example_8dec_text](https://cloud.githubusercontent.com/assets/6823298/21023232/b1fb0b70-bd90-11e6-9796-9b6d9b5faff9.png)
 
 ### Running a full visualization
 Now you are ready for the main part - running a visualization on the whole 50k+ set of tags. Our script allows you to specify a date **POST_DATE**. All posts earlier than this date will be filtered prior to making a visualization. This affects measuring the similarity between two tags: since we count number of questions that have both tags, filtering old questions makes the similarity more current.
@@ -58,13 +59,12 @@ python3 -m http.server
 ```  
 Open [http://localhost:8000/tiling_visualizer.html](http://localhost:8000/tiling_visualizer.html) in your web browser. 
 You will see a drop-down list on the left. There you can choose which visualization to show. Choose the one according to specified POST_DATE.
-Hooray, you now see a full set of tags!  
+Hooray, you now see a full set of tags!
+![full_dec8](https://cloud.githubusercontent.com/assets/6823298/21023300/f2720460-bd90-11e6-873a-d925db553a8c.png)
+
 
 Check out a video demonstration (click to play):  
-[![Click to play on youtube](https://img.youtube.com/vi/mj90I_i6HNo/0.jpg)](https://www.youtube.com/watch?v=mj90I_i6HNo)
-
-Another video, which shows the ability to switch between maps corresponding to different POST_DATE's:
-[![Click to play on youtube](https://img.youtube.com/vi/ZrnjrMy2dA0/0.jpg)](https://www.youtube.com/watch?v=ZrnjrMy2dA0)
+[![Click to play on youtube](https://img.youtube.com/vi/XAnMITuz2pE/0.jpg)](https://www.youtube.com/watch?v=XAnMITuz2pE)
 
 
 ### Authors
