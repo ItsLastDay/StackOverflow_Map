@@ -58,6 +58,10 @@ TILE_DIM = 256 * ANTIALIASING_SCALE
 SHIFT = 10 * ANTIALIASING_SCALE
 # Tiles are united in groups of METATILE_SIZE x METATILE_SIZE units.
 METATILE_SIZE = 8
+# The level, starting at which all tag names are shown, and number of shown tag 
+# names per tile.
+ZOOM_TEXT_SHOW = 7
+TAGS_ANNOTATED_PER_TILE = 10
 
 Point = namedtuple('Point', ['x', 'y'])
 
@@ -96,6 +100,8 @@ class Tiler:
         max_size = max(self.max_x - self.min_x, self.max_y - self.min_y)
         self.map_size = max_size
 
+        self.tile_size = [self.map_size / (1 << i) * METATILE_SIZE for i in range(20)]
+
 
     def set_bbox(self, tags):
         self.tag_spatial_index = Index(bbox=(self.min_x, self.min_y, self.max_x, self.max_y))
@@ -127,6 +133,37 @@ class Tiler:
         return tag_count / max_post_count
 
 
+    def get_tags_in_tile(self, meta_x, meta_y, zoom, with_shift):
+        tile_size = self.tile_size[zoom]
+        lower_left_corner = Point(self.origin.x + meta_x * tile_size,
+                                  self.origin.y + meta_y * tile_size)
+
+        shift = SHIFT if with_shift else 0
+        tags_inside_tile = self.tag_spatial_index.intersect((lower_left_corner.x - shift, 
+                                                             lower_left_corner.y - shift,
+                                                             lower_left_corner.x + tile_size + shift, 
+                                                             lower_left_corner.y + tile_size + shift))
+
+        return tags_inside_tile
+
+
+    def get_names_of_shown_tags(self, meta_x, meta_y, zoom):
+        """
+        Return the names of tags that we will show on the map.
+
+        On low zoom levels, not all names are shown. 
+        """
+        if zoom >= ZOOM_TEXT_SHOW:
+            # We know that all tag names will be shown anyway, so just return.
+            return []
+
+        tags_inside_tile = self.get_tags_in_tile(meta_x, meta_y, zoom, False)
+
+        all_postcounts = sorted([(tag.PostCount, tag.name) for tag in tags_inside_tile])
+        largest_tags = heapq.nlargest(TAGS_ANNOTATED_PER_TILE, all_postcounts)
+        return {x[1] for x in largest_tags if x[0] > 0}
+
+
     def get_metatile(self, meta_x, meta_y, zoom):
         ''' 
         Get 8x8 rectangle of tiles, compute them at once. 
@@ -142,24 +179,19 @@ class Tiler:
             TILE_DIM * METATILE_SIZE), (240, 240, 240))
         draw = ImageDraw.Draw(img)
 
-        tile_size = self.map_size / (1 << zoom) * METATILE_SIZE
+        tile_size = self.tile_size[zoom]
         lower_left_corner = Point(self.origin.x + meta_x * tile_size,
                                   self.origin.y + meta_y * tile_size)
         max_circle_rad = zoom * 1
         cnt_points = 0
 
+        names_of_shown_tags = set()
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                names_of_shown_tags.update(self.get_names_of_shown_tags(meta_x + dx, meta_y + dy, zoom))
+
         # Match slightly more tags, so that circles from neighbouring tiles can be drawn partially.
-        tags_inside_tile = self.tag_spatial_index.intersect((lower_left_corner.x - SHIFT, 
-                                                             lower_left_corner.y - SHIFT,
-                                                             lower_left_corner.x + tile_size + SHIFT, 
-                                                             lower_left_corner.y + tile_size + SHIFT))
-
-
-        # `+ [0]` ensures that `all_postcounts` is not empty.
-        all_postcounts = sorted([tag.PostCount for tag in tags_inside_tile]) + [0]
-        percentile_cutoff = heapq.nlargest(10, all_postcounts)[-1]
-        # When postcounts are not provided, they are set to -1. Make the cutoff bigger.
-        percentile_cutoff = max(percentile_cutoff, 0)
+        tags_inside_tile = self.get_tags_in_tile(meta_x, meta_y, zoom, True)
 
 
         def get_point_from_tag(tag):
@@ -190,9 +222,8 @@ class Tiler:
         # (because I did not find any kind of z-index feature in PIL)
         for tag in tags_inside_tile:
             pnt = get_point_from_tag(tag)
-            # Lighter text color for crowded areas, darker for lone areas.
             fill = (0, 0, 0)
-            if zoom >= 7 or tag.PostCount >= percentile_cutoff:
+            if zoom >= ZOOM_TEXT_SHOW or tag.name in names_of_shown_tags:
                 draw.text(pnt, tag.name, fill=fill, font=self.fonts[zoom])
 
         del draw
