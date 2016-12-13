@@ -117,7 +117,8 @@ class Tiler:
 
 
     def set_fonts(self):
-        self.fonts = [ImageFont.truetype('./Verdana.ttf', ANTIALIASING_SCALE * (25 - zoom * 2)) for zoom in range(8 + 1)]
+        path_to_font = os.path.join(os.path.dirname(os.path.abspath(__file__)), './Verdana.ttf')
+        self.fonts = [ImageFont.truetype(path_to_font, ANTIALIASING_SCALE * (25 - zoom * 2)) for zoom in range(8 + 1)]
 
 
     def __init__(self, tags):
