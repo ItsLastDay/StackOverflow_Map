@@ -37,9 +37,9 @@ Then type (from the root of the repository)
 It should complete in a matter of minutes. Then go to `src/visualization` folder and start a server:  
 ```
 cd ./src/visualization
-python3 -m http.server
+python3 run_server.py
 ```  
-As a final step, open [http://localhost:8000/tiling_visualizer.html](http://localhost:8000/tiling_visualizer.html) in your favourite web browser (NOTE: if port #8000 is already bound to something on your computer, you can specify another port, e.g. via `python3 -m http.server 1234`). You should see something like this:  
+As a final step, open [http://localhost:8000/](http://localhost:8000/) in your favourite web browser. You should see something like this:  
 ![example_8dec](https://cloud.githubusercontent.com/assets/6823298/21023205/9e44fe1a-bd90-11e6-9be9-1a8370d0aba9.png)
 
 You can navigate on the map using mouse buttons and zoom via scroll button.
@@ -55,9 +55,9 @@ From the root of the repository, type
 This command requires **several hours** to complete. It will write tags in a separate folder with a POST_DATE value in it, e.g. `tiles_2012-08-25`. Don't hesitate to try different POST_DATE's - they do not overwrite each other! Then perform the steps described above:
 ```
 cd ./src/visualization
-python3 -m http.server
+python3 run_server.py
 ```  
-Open [http://localhost:8000/tiling_visualizer.html](http://localhost:8000/tiling_visualizer.html) in your web browser. 
+Open [http://localhost:8000/](http://localhost:8000/) in your web browser. 
 You will see a drop-down list on the left. There you can choose which visualization to show. Choose the one according to specified POST_DATE.
 Hooray, you now see a full set of tags!
 ![full_dec8](https://cloud.githubusercontent.com/assets/6823298/21023300/f2720460-bd90-11e6-873a-d925db553a8c.png)
