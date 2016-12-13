@@ -63,9 +63,9 @@ This script is based on http://bl.ocks.org/mbostock/5914438
 
 var selected_folder = null;
 // Get all `tiles{something}` entries from the directory listing.
-$.get('/').done(function(listing_html)
+$.get('/get_tile_variants').done(function(listing_html)
     {
-        var tiles_search_re = new RegExp("href=\"(tiles.*?)/\"", "g");//"/href=\"(tilles.*?)\/\"/g";
+        var tiles_search_re = new RegExp("(tiles[^<]*)", "g");
         var tile_matches = [];
         var x;
         while ((x = tiles_search_re.exec(listing_html)) != null)
