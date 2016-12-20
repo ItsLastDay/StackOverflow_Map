@@ -23,7 +23,6 @@
     z-index: 2;
     background: white;
     width: 15%;
-    height: 15%;
     opacity: 0.5;
 }
 
@@ -44,8 +43,6 @@ body {
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://d3js.org/d3-tile.v0.0.min.js"></script>
 
-<!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">-->
-
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 
 
@@ -60,7 +57,7 @@ body {
     <div>
         Search tag by name:
         <input type="text" id="search_name" placeholder="e.g. python">
-        <input type="button" onclick="search()" value="Search">
+        <input type="button" id="search_button" onclick="search()" value="Search">
     </div>
 </div>
 
@@ -68,6 +65,16 @@ body {
 /*
 This script is based on http://bl.ocks.org/mbostock/5914438
 */
+
+
+$('#search_name').on('keyup', function(event) {
+    // Allow tag searching by pressing 'Enter' rather than the 'Search' button.
+    if (event.which == 13)
+    {
+        $('#search_button').click();
+        return false;
+    }
+});
 
 var selected_folder = null;
 // Get all `tiles{something}` entries.
@@ -204,7 +211,11 @@ function populate_menu_dropdown(tile_matches)
         var folder_name = tile_matches[i];
         var opt = document.createElement("option");
         opt.value = folder_name;
-        opt.text = "Posts later than " + folder_name.substr("tiles_".length);
+        tag_date = folder_name.substr("tiles_".length);
+        if (tag_date != "example")
+            opt.text = "Posts later than " + tag_date;
+        else
+            opt.text = tag_date;
         x.add(opt);
     }
     selected_folder = tile_matches[0];
