@@ -50,11 +50,18 @@ body {
 
 
 <div id="menu" class="menu_class">
-<!--    
-    <p>x: <span id="x_pos"/> </p>
-    <p>y: <span id="y_pos"/> </p>
--->
-    <select id="tile_selector_dropdown" onChange="switch_selected_folder(this)"></select>
+    <div>
+        Select a subset of posts, based on which
+        tag similarity is measured:
+        <select id="tile_selector_dropdown" onChange="switch_selected_folder(this)"></select>
+    </div>
+
+    <br>
+    <div>
+        Search tag by name:
+        <input type="text" id="search_name" placeholder="e.g. python">
+        <input type="button" onclick="search()" value="Search">
+    </div>
 </div>
 
 <script>
@@ -63,7 +70,7 @@ This script is based on http://bl.ocks.org/mbostock/5914438
 */
 
 var selected_folder = null;
-// Get all `tiles{something}` entries from the directory listing.
+// Get all `tiles{something}` entries.
 $.get('/get_tile_variants').done(function(listing_html)
     {
         var tiles_search_re = new RegExp("(tiles[^<]*)", "g");
@@ -79,16 +86,9 @@ $.get('/get_tile_variants').done(function(listing_html)
         main();
     }
 );
-
-var pi = Math.PI,
-    tau = 2 * pi;
     
 var width = Math.max(960, window.innerWidth),
     height = Math.max(500, window.innerHeight);
-
-var projection = d3.geoMercator()
-    .scale(1 / tau)
-    .translate([0, 0]);
 
 var tile = d3.tile()
     .size([width, height]);
@@ -105,21 +105,8 @@ var svg = d3.select('body')
       .attr("viewBox", "0 0 " + width + " " + height)
       .classed("svg-content-responsive", true);
 
-/*
-svg.on('mousemove', function() {
-    var coordinates = d3.mouse(this);
-    console.log(coordinates);
-    console.log(projection.invert(coordinates));
-    console.log(formatLocation(projection.invert(coordinates), zoom.scale));
-//    console.log(coordinates);
-    $("#x_pos").text(coordinates[0] / 256);
-    $("#y_pos").text(coordinates[1] / 256);
-});
-*/
-
 var raster = svg.append("g");
 
-var center = [0, 0];
 
 function main()
 {
@@ -128,7 +115,34 @@ function main()
       .call(zoom.transform, d3.zoomIdentity
           .translate(width / 2, height / 2)
           .scale(1 << 10)
-          .translate(-center[0], -center[1]));
+          .translate(0, 0)
+        );
+}
+
+
+function search()
+{
+    name = document.getElementById('search_name').value;
+    $.get('/search/' + selected_folder.substr("tiles_".length) + '/' + name).done(
+            function(response)
+            {
+                if (response == "")
+                {
+                    alert('No such tag.');
+                    return;
+                }
+                var xy = response.split(" ");
+                var x = parseFloat(xy[0]);
+                var y = parseFloat(xy[1]);
+
+                var sc = 1 << 15;
+                svg.call(zoom)
+                    .call(zoom.transform, d3.zoomIdentity
+                        .translate(width / 2, height / 2)
+                        .scale(sc)
+                        .translate(0.5 - x, 0.5 - y));
+            }
+    );
 }
 
 
@@ -164,7 +178,8 @@ function zoomed() {
       .attr("height", 256);
 }
 
-function stringify(scale, translate) {
+function stringify(scale, translate) 
+{
   var k = scale / 256, r = scale % 1 ? Number : Math.round;
   return "translate(" + r(translate[0] * scale) + "," + r(translate[1] * scale) + ") scale(" + k + ")";
 }
@@ -175,7 +190,7 @@ function switch_selected_folder(dropdown)
     selected_folder = value;
     // Need to reload all tiles. They do not reload without scaling
     // (because tiles are loaded by `zoomed` callback), so scale
-    // two times to obtain the same view, but on different tile set.
+    // two times to obtain the same view, but on a different tile set.
     svg.call(zoom.scaleBy, 0.5);
     svg.call(zoom.scaleBy, 2);
 }
@@ -188,7 +203,8 @@ function populate_menu_dropdown(tile_matches)
     {
         var folder_name = tile_matches[i];
         var opt = document.createElement("option");
-        opt.value = opt.text = folder_name;
+        opt.value = folder_name;
+        opt.text = "Posts later than " + folder_name.substr("tiles_".length);
         x.add(opt);
     }
     selected_folder = tile_matches[0];

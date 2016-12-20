@@ -52,6 +52,15 @@ def initialize():
     tiling_names = sorted(functioning_names)
 
 
+@app.route('/search/<suffix>/<name>')
+def search(suffix, name):
+    if suffix not in created_tilers:
+        return ''
+
+    tiler = created_tilers[suffix]
+    return ' '.join(map(str, tiler.search(name)))
+
+
 @app.route('/get_tile_variants')
 def tile_variants():
     return '<br>'.join(tiling_names)
@@ -59,7 +68,8 @@ def tile_variants():
 
 @app.route('/tiles_<suffix>/<int:x>_<int:y>_<int:z>.png')
 def serve_tile(suffix, x, y, z):
-    assert (suffix == 'example' or re.match('^\d{4}-\d{2}-\d{2}$', suffix))
+    if suffix not in created_tilers:
+        return ""
 
     return send_from_directory('', 'tiles_{}/{}_{}_{}.png'.format(suffix, x, y, z))
 

@@ -102,6 +102,13 @@ class Tiler:
 
         self.tile_size = [self.map_size / (1 << i) * METATILE_SIZE for i in range(20)]
 
+        self.tag_to_normpos = dict()
+        for tag in tags:
+            x, y = tag.x, tag.y
+            rel_x, rel_y = x - self.origin.x, y - self.origin.y
+            norm_x, norm_y = rel_x / self.map_size, rel_y / self.map_size
+            self.tag_to_normpos[tag.name] = (norm_x, norm_y)
+
 
     def set_bbox(self, tags):
         self.tag_spatial_index = Index(bbox=(self.min_x, self.min_y, self.max_x, self.max_y))
@@ -126,6 +133,10 @@ class Tiler:
         self.set_bbox(tags)
         self.set_postcount(tags)
         self.set_fonts()
+
+
+    def search(self, name):
+        return self.tag_to_normpos.get(name, '')
 
 
     def get_postcount_measure(self, tag):
