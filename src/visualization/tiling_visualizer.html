@@ -130,6 +130,7 @@ function main()
 function search()
 {
     name = document.getElementById('search_name').value;
+    name = encodeURIComponent(name);
     $.get('/search/' + selected_folder.substr("tiles_".length) + '/' + name).done(
             function(response)
             {
