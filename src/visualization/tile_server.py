@@ -10,7 +10,7 @@ import get_tiling
 
 app = Flask(__name__)
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__));
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROCESSED_DIR = os.path.join(BASE_DIR, '../../data/processed/')
 
 POINTS_TSV_FMT = os.path.join(BASE_DIR, 'tsne_output_{}.tsv')
@@ -24,7 +24,7 @@ created_tilers = dict()
 @app.before_first_request
 def initialize():
     global tiling_names
-    lst_files = os.listdir()
+    lst_files = os.listdir('.')
     # Search for directories starting with 'tiles_' substring.
     for dirname in lst_files:
         if not os.path.isdir(dirname):
@@ -44,7 +44,7 @@ def initialize():
             continue
 
         points_data = get_tiling.get_tags_data(tsv_concrete_name, additional_info_concrete_name)
-        created_tilers[tiling_suffix] = get_tiling.Tiler(points_data)
+        created_tilers[tiling_suffix] = get_tiling.LightTiler(points_data)
 
         functioning_names.append(tiling_name)
         print('Loaded {}.'.format(tiling_name))

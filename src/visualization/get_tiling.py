@@ -9,12 +9,11 @@ import csv
 
 import heapq
 from collections import namedtuple
-
 from concurrent.futures import ThreadPoolExecutor
+from PIL import Image
 
-from PIL import Image, ImageDraw, ImageOps, ImageFont
+from tiler import LightTiler, Tag
 
-from pyqtree import Index
 
 """
 Read a file with <tag_name, x, y> triples and compute an image representation 
@@ -78,169 +77,7 @@ def get_tags_data(tsv_data_path, additional_data_path):
 
             return tags
 
-class Tag:
 
-    def __init__(self, x, y, *additional_info):
-        self.x = x
-        self.y = y
-        for field_name, field_val in additional_info:
-            self.__dict__[field_name] = field_val
-
-
-class Tiler:
-
-    def set_extent(self, tags):
-        self.max_x = max((tag.x for tag in tags)) + SHIFT
-        self.min_x = min((tag.x for tag in tags)) - SHIFT
-
-        self.max_y = max((tag.y for tag in tags)) + SHIFT
-        self.min_y = min((tag.y for tag in tags)) - SHIFT
-
-        self.origin = Point(self.min_x, self.min_y)
-        max_size = max(self.max_x - self.min_x, self.max_y - self.min_y)
-        self.map_size = max_size
-
-        self.tile_size = [self.map_size / (1 << i) * METATILE_SIZE for i in range(20)]
-
-        self.tag_to_normpos = dict()
-        for tag in tags:
-            x, y = tag.x, tag.y
-            rel_x, rel_y = x - self.origin.x, y - self.origin.y
-            norm_x, norm_y = rel_x / self.map_size, rel_y / self.map_size
-            self.tag_to_normpos[tag.name] = (norm_x, norm_y)
-
-
-    def set_bbox(self, tags):
-        self.tag_spatial_index = Index(bbox=(self.min_x, self.min_y, self.max_x, self.max_y))
-        for tag in tags:
-            bbox = (tag.x, tag.y, tag.x, tag.y)
-            self.tag_spatial_index.insert(tag, bbox)
-
-
-    def set_postcount(self, tags):
-        for tag in tags:
-            tag.PostCount = int(getattr(tag, 'PostCount', -1))
-        self.max_post_count = max(int(tag.PostCount) for tag in tags)
-
-
-    def set_fonts(self):
-        path_to_font = os.path.join(os.path.dirname(os.path.abspath(__file__)), './Verdana.ttf')
-        self.fonts = [ImageFont.truetype(path_to_font, ANTIALIASING_SCALE * (25 - zoom * 2)) for zoom in range(8 + 1)]
-
-
-    def __init__(self, tags):
-        self.set_extent(tags)
-        self.set_bbox(tags)
-        self.set_postcount(tags)
-        self.set_fonts()
-
-
-    def search(self, name):
-        return self.tag_to_normpos.get(name, '')
-
-
-    def get_postcount_measure(self, tag):
-        tag_count = tag.PostCount
-        max_post_count = self.max_post_count
-        return tag_count / max_post_count
-
-
-    def get_tags_in_tile(self, meta_x, meta_y, zoom, with_shift):
-        tile_size = self.tile_size[zoom]
-        lower_left_corner = Point(self.origin.x + meta_x * tile_size,
-                                  self.origin.y + meta_y * tile_size)
-
-        shift = SHIFT if with_shift else 0
-        tags_inside_tile = self.tag_spatial_index.intersect((lower_left_corner.x - shift, 
-                                                             lower_left_corner.y - shift,
-                                                             lower_left_corner.x + tile_size + shift, 
-                                                             lower_left_corner.y + tile_size + shift))
-
-        return tags_inside_tile
-
-
-    def get_names_of_shown_tags(self, meta_x, meta_y, zoom):
-        """
-        Return the names of tags that we will show on the map.
-
-        On low zoom levels, not all names are shown. 
-        """
-        if zoom >= ZOOM_TEXT_SHOW:
-            # We know that all tag names will be shown anyway, so just return.
-            return []
-
-        tags_inside_tile = self.get_tags_in_tile(meta_x, meta_y, zoom, False)
-
-        all_postcounts = sorted([(tag.PostCount, tag.name) for tag in tags_inside_tile])
-        largest_tags = heapq.nlargest(TAGS_ANNOTATED_PER_TILE, all_postcounts)
-        return {x[1] for x in largest_tags if x[0] > 0}
-
-
-    def get_metatile(self, meta_x, meta_y, zoom):
-        ''' 
-        Get 8x8 rectangle of tiles, compute them at once. 
-        This is faster than computing them one-by-one.
-
-        `meta_x` and `meta_y` are coordinates of upper-left tile of the 
-        generated metatile.
-        '''
-        meta_x /= METATILE_SIZE
-        meta_y /= METATILE_SIZE
-
-        img = Image.new('RGB', (TILE_DIM * METATILE_SIZE, 
-            TILE_DIM * METATILE_SIZE), (240, 240, 240))
-        draw = ImageDraw.Draw(img)
-
-        tile_size = self.tile_size[zoom]
-        lower_left_corner = Point(self.origin.x + meta_x * tile_size,
-                                  self.origin.y + meta_y * tile_size)
-        max_circle_rad = zoom * 1
-        cnt_points = 0
-
-        names_of_shown_tags = set()
-        for dx in (-1, 0, 1):
-            for dy in (-1, 0, 1):
-                names_of_shown_tags.update(self.get_names_of_shown_tags(meta_x + dx, meta_y + dy, zoom))
-
-        # Match slightly more tags, so that circles from neighbouring tiles can be drawn partially.
-        tags_inside_tile = self.get_tags_in_tile(meta_x, meta_y, zoom, True)
-
-
-        def get_point_from_tag(tag):
-            x, y = tag.x, tag.y
-
-            # Get coordinates from tile origin.
-            point_coords = Point(x - lower_left_corner.x, y - lower_left_corner.y)
-            # Now scale to TILE_DIM.
-            pnt = Point(point_coords.x / tile_size * TILE_DIM * METATILE_SIZE,
-                        point_coords.y / tile_size * TILE_DIM * METATILE_SIZE)
-            return pnt
-
-
-        for tag in tags_inside_tile:
-            pnt = get_point_from_tag(tag)
-
-            # Heuristic formula for showing post counts by circle sizes.
-            post_count_measure = self.get_postcount_measure(tag)
-            circle_rad = max(0.5, max_circle_rad * post_count_measure)
-
-            draw.ellipse([pnt.x - circle_rad, pnt.y - circle_rad,
-                   pnt.x + circle_rad, pnt.y + circle_rad],
-                   fill=(122, 176, 42))
-
-            cnt_points += 1
-
-        # Draw text after all circles, so that it is not overwritten.
-        # (because I did not find any kind of z-index feature in PIL)
-        for tag in tags_inside_tile:
-            pnt = get_point_from_tag(tag)
-            fill = (0, 0, 0)
-            if zoom >= ZOOM_TEXT_SHOW or tag.name in names_of_shown_tags:
-                draw.text(pnt, tag.name, fill=fill, font=self.fonts[zoom])
-
-        del draw
-
-        return img, cnt_points
 
 
 def get_tile_dir(date_suffix):
@@ -289,7 +126,7 @@ def main():
     tile_dir = get_tile_dir(date_suffix)
     prepare_tile_dir(tile_dir)
 
-    tiler = Tiler(get_tags_data(tsv_data_path, additional_data_path))
+    tiler = LightTiler(get_tags_data(tsv_data_path, additional_data_path))
     pool = ThreadPoolExecutor()
 
 
