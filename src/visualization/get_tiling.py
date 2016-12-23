@@ -12,7 +12,7 @@ from collections import namedtuple
 from concurrent.futures import ThreadPoolExecutor
 from PIL import Image
 
-from tiler import LightTiler, Tag
+from tiler import DarkTiler, Tag
 
 
 """
@@ -45,7 +45,7 @@ Example usage:
     python3 get_tiling.py tsne_output_example.tsv id_to_additional_info_example.csv 5 example
 """
 
-TILES_DIR_BASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tiles')
+TILES_DIR_BASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.pardir, os.path.pardir,'data','tiles', 'tiles')
 
 # Each tile is rendered in (256x256)*ANTIALIASING_SCALE size,
 # and then downscaled with antialiasing.
@@ -126,7 +126,7 @@ def main():
     tile_dir = get_tile_dir(date_suffix)
     prepare_tile_dir(tile_dir)
 
-    tiler = LightTiler(get_tags_data(tsv_data_path, additional_data_path))
+    tiler = DarkTiler(get_tags_data(tsv_data_path, additional_data_path))
     pool = ThreadPoolExecutor()
 
 

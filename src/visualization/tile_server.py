@@ -7,6 +7,7 @@ import os.path
 
 import get_tiling
 
+TILES_DIRECTORY = '../../data/tiles'
 
 app = Flask(__name__)
 
@@ -24,10 +25,11 @@ created_tilers = dict()
 @app.before_first_request
 def initialize():
     global tiling_names
-    lst_files = os.listdir('.')
+    lst_files = os.listdir(TILES_DIRECTORY)
     # Search for directories starting with 'tiles_' substring.
     for dirname in lst_files:
-        if not os.path.isdir(dirname):
+        full_dir_name = os.path.join(TILES_DIRECTORY, dirname)
+        if not os.path.isdir(full_dir_name):
             continue
         if not dirname.startswith('tiles_'):
             continue
@@ -44,7 +46,7 @@ def initialize():
             continue
 
         points_data = get_tiling.get_tags_data(tsv_concrete_name, additional_info_concrete_name)
-        created_tilers[tiling_suffix] = get_tiling.LightTiler(points_data)
+        created_tilers[tiling_suffix] = get_tiling.DarkTiler(points_data)
 
         functioning_names.append(tiling_name)
         print('Loaded {}.'.format(tiling_name))
@@ -71,7 +73,7 @@ def serve_tile(suffix, x, y, z):
     if suffix not in created_tilers:
         return ""
 
-    return send_from_directory('', 'tiles_{}/{}_{}_{}.png'.format(suffix, x, y, z))
+    return send_from_directory('../../data/tiles', 'tiles_{}/{}_{}_{}.png'.format(suffix, x, y, z))
 
 
 @app.route('/')
