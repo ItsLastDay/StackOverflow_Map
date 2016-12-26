@@ -57,7 +57,7 @@ class DarkTiler(Tiler):
         tile_size = self.tile_size[zoom]
         lower_left_corner = Point(self.origin.x + meta_x * tile_size,
                                   self.origin.y + meta_y * tile_size)
-        max_circle_rad = zoom * 1
+        max_circle_rad = max(zoom * 1, 1)
         cnt_points = 0
 
         names_of_shown_tags = set()
