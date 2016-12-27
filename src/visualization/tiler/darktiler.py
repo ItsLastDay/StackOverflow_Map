@@ -6,26 +6,22 @@ import heapq
 import math
 from PIL import Image, ImageDraw, ImageOps, ImageFont
 
-
 from tiler.tiler import *
 
 
 class DarkTiler(Tiler):
-
     def set_fonts(self):
         path_to_font = os.path.join(os.path.dirname(os.path.abspath(__file__)), './Verdana.ttf')
         self.fonts = [ImageFont.truetype(path_to_font, ANTIALIASING_SCALE * (25 + zoom * 2)) for zoom in range(8 + 1)]
 
     def __init__(self, tags):
         super().__init__(tags)
-        #self.set_fonts()
-
+        # self.set_fonts()
 
     def get_postcount_measure(self, tag):
         tag_count = tag.PostCount
         max_post_count = self.max_post_count
-        return math.pow(tag_count / max_post_count, 1/3)
-
+        return math.pow(tag_count / max_post_count, 1 / 3)
 
     def get_names_of_shown_tags(self, meta_x, meta_y, zoom):
         """
@@ -57,7 +53,7 @@ class DarkTiler(Tiler):
         tile_size = self.tile_size[zoom]
         lower_left_corner = Point(self.origin.x + meta_x * tile_size,
                                   self.origin.y + meta_y * tile_size)
-        max_circle_rad = max(zoom * 1, 1)
+        max_circle_rad = max(zoom * ANTIALIASING_SCALE, 1)
         cnt_points = 0
 
         names_of_shown_tags = set()
@@ -86,14 +82,22 @@ class DarkTiler(Tiler):
 
             brightness = 1
             circle_rad = max_circle_rad * post_count_measure
-            if circle_rad < 1:
+            if circle_rad < 0.5:
                 brightness = circle_rad
-                circle_rad = 1
-            color_component= int(250*brightness)
-
-            draw.ellipse([pnt.x - circle_rad, pnt.y - circle_rad,
-                          pnt.x + circle_rad, pnt.y + circle_rad],
-                         fill=(color_component, color_component, color_component))
+                circle_rad = 0.5
+            color_component = int(250 * brightness)
+            if circle_rad > 2:
+                # it's big! lets draw star on it
+                draw.polygon(self.make_star(pnt, circle_rad),
+                             outline=(color_component, color_component, color_component),
+                             fill=(color_component, color_component, int(color_component * 0.9)))
+            elif circle_rad > 0.5:
+                draw.ellipse([pnt.x - circle_rad, pnt.y - circle_rad,
+                              pnt.x + circle_rad, pnt.y + circle_rad],
+                             fill=(color_component, color_component, color_component))
+            else:  # better place point instead of messy circle
+                draw.point([pnt.x, pnt.y],
+                           fill=(color_component, color_component, color_component))
 
             cnt_points += 1
 
@@ -105,11 +109,24 @@ class DarkTiler(Tiler):
                 font = self.fonts[zoom]
                 text_w, text_h = draw.textsize(tag.name, font=font)
                 pnt_x, pnt_y = get_point_from_tag(tag)
-                text_pos = (pnt_x - int(text_w/2), pnt_y - int(text_h/2))
+                text_pos = (pnt_x - int(text_w / 2), pnt_y)
                 draw.text(text_pos, tag.name, fill=text_fill, font=font)
 
         del draw
 
         return img, cnt_points
 
-
+    @staticmethod
+    def make_star(position, radius):
+        # returns four-point-star-shape polygon
+        outer_radius = 2.3 * radius
+        inner_radius = outer_radius * 0.1
+        return [(position.x, position.y - outer_radius),
+                (position.x + inner_radius, position.y - inner_radius),
+                (position.x + outer_radius, position.y),
+                (position.x + inner_radius, position.y + inner_radius),
+                (position.x, position.y + outer_radius),
+                (position.x - inner_radius, position.y + inner_radius),
+                (position.x - outer_radius, position.y),
+                (position.x - inner_radius, position.y - inner_radius),
+                ]

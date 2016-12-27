@@ -12,7 +12,7 @@ from collections import namedtuple
 from concurrent.futures import ThreadPoolExecutor
 from PIL import Image
 
-from tiler import DarkTiler, Tag
+from tiler import DarkTiler, Tag, render_tiles, METATILE_SIZE
 
 
 """
@@ -47,21 +47,6 @@ Example usage:
 
 TILES_DIR_BASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.pardir, os.path.pardir,'data','tiles', 'tiles')
 
-# Each tile is rendered in (256x256)*ANTIALIASING_SCALE size,
-# and then downscaled with antialiasing.
-# http://stackoverflow.com/questions/14350645/is-there-antialiasing-method-for-python-pil
-ANTIALIASING_SCALE = 1
-TILE_DIM = 256 * ANTIALIASING_SCALE
-# SHIFT is used for ensuring that any geometry on the border of two tiles
-# is drawn properly.
-SHIFT = 10 * ANTIALIASING_SCALE
-# Tiles are united in groups of METATILE_SIZE x METATILE_SIZE units.
-METATILE_SIZE = 8
-# The level, starting at which all tag names are shown, and number of shown tag 
-# names per tile.
-ZOOM_TEXT_SHOW = 7
-TAGS_ANNOTATED_PER_TILE = 10
-
 Point = namedtuple('Point', ['x', 'y'])
 
 
@@ -92,29 +77,6 @@ def prepare_tile_dir(tile_dir):
     os.mkdir(tile_dir)
 
 
-def render_tiles(img, meta_x, meta_y, tile_zoom, tile_dir):
-    for dx in range(METATILE_SIZE):
-        x = meta_x + dx
-        if x >= 2 ** tile_zoom:
-            break
-
-        for dy in range(METATILE_SIZE):
-            y = meta_y + dy
-            if y >= 2 ** tile_zoom:
-                break
-
-            img_name = os.path.join(tile_dir, '{}_{}_{}.png'.format(x, y, tile_zoom))
-
-            image_part = img.crop((dx * TILE_DIM, dy * TILE_DIM, 
-                                    (dx + 1) * TILE_DIM, (dy + 1) * TILE_DIM))
-
-            image_part = image_part.resize((TILE_DIM // ANTIALIASING_SCALE,
-                                            TILE_DIM // ANTIALIASING_SCALE),
-                                            resample=Image.LANCZOS)
-
-            image_part.save(img_name, optimize=True)
-
-    del img
 
 
 def main():
