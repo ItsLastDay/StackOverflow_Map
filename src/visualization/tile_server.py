@@ -14,7 +14,7 @@ app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROCESSED_DIR = os.path.join(BASE_DIR, '../../data/processed/')
 
-POINTS_TSV_FMT = os.path.join(BASE_DIR, 'tsne_output_{}.tsv')
+POINTS_TSV_FMT = os.path.join(PROCESSED_DIR, 'tsne_output_{}.tsv')
 ADDITIONAL_INFO_FMT = os.path.join(PROCESSED_DIR, 'id_to_additional_info_{}.csv')
 
 

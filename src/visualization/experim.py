@@ -20,7 +20,7 @@ def point_to_image(point, points_bbox, image_size):
 
 def main():
     points = np.array([[float(w) for w in line.strip().split('\t')] for line in open(
-        os.path.join(project_dir, 'src', 'visualization', 'tsne_output_2008-01-01.tsv')).readlines()[1:] if
+        os.path.join(project_dir, 'data', 'processed', 'tsne_output_2008-01-01.tsv')).readlines()[1:] if
                        line.strip()])
     min_x, min_y, max_x, max_y = min(points[:, 0]), min(points[:, 1]), max(points[:, 0]), max(points[:, 1])
     points_bbox = (min_x, min_y, max_x, max_y)

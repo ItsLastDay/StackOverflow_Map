@@ -20,8 +20,8 @@ all:
 	@printf "\tmake visualize_example\n"
 	@printf "\tmake generate_tiles POST_DATE=YYYY-MM-DD"
 
-$(DATA)/raw/question_tags.csv $(DATA)/raw/questions.csv: $(SRC)/data/make_raw_data.py
-	python3 $(SRC)/data/make_raw_data.py
+#$(DATA)/raw/question_tags.csv $(DATA)/raw/questions.csv: $(SRC)/data/make_raw_data.py
+#	python3 $(SRC)/data/make_raw_data.py
 
 
 # Obtain raw data.
@@ -82,30 +82,30 @@ $(BHTSNE)/nearest_neighbour_bhtsne/bh_tsne: $(BHTSNE)/nearest_neighbour_bhtsne/t
 
 
 # Run a rewritten version of `bhtsne` on out nearest neighbour matrix.
-$(PROCESSED)/raw_tsne_output_$(POST_DATE).txt: $(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(BHTSNE)/nearest_neighbour_bhtsne/bh_tsne $(INTERIM)/nn_matrix_$(POST_DATE).txt 
+$(RAW)/raw_tsne_output_$(POST_DATE).txt: $(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(BHTSNE)/nearest_neighbour_bhtsne/bh_tsne $(INTERIM)/nn_matrix_$(POST_DATE).txt 
 	$(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(INTERIM)/nn_matrix_$(POST_DATE).txt > $@
-$(PROCESSED)/raw_tsne_output_example.txt: $(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(BHTSNE)/nearest_neighbour_bhtsne/bh_tsne $(INTERIM)/nn_matrix_example.txt
+$(RAW)/raw_tsne_output_example.txt: $(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(BHTSNE)/nearest_neighbour_bhtsne/bh_tsne $(INTERIM)/nn_matrix_example.txt
 	$(BHTSNE)/nearest_neighbour_bhtsne/run.sh $(INTERIM)/nn_matrix_example.txt > $@
 
 
-$(SRC)/visualization/tsne_output_$(POST_DATE).tsv: $(PROCESSED)/raw_tsne_output_$(POST_DATE).txt $(BHTSNE)/extract_tsv.py $(PROCESSED)/id_to_additional_info_$(POST_DATE).csv
-	python3 $(BHTSNE)/extract_tsv.py $(PROCESSED)/raw_tsne_output_$(POST_DATE).txt > $@
+$(PROCESSED)/tsne_output_$(POST_DATE).tsv: $(RAW)/raw_tsne_output_$(POST_DATE).txt $(BHTSNE)/extract_tsv.py $(PROCESSED)/id_to_additional_info_$(POST_DATE).csv
+	python3 $(BHTSNE)/extract_tsv.py $(RAW)/raw_tsne_output_$(POST_DATE).txt > $@
 	python3 $(SRC)/visualization/get_tiling.py $@ $(PROCESSED)/id_to_additional_info_$(POST_DATE).csv 7 $(POST_DATE)
-$(SRC)/visualization/tsne_output_example.tsv: $(PROCESSED)/raw_tsne_output_example.txt $(BHTSNE)/extract_tsv.py $(PROCESSED)/id_to_additional_info_example.csv
-	python3 $(BHTSNE)/extract_tsv.py $(PROCESSED)/raw_tsne_output_example.txt > $(SRC)/visualization/tsne_output_example.tsv
-	python3 $(SRC)/visualization/get_tiling.py $(SRC)/visualization/tsne_output_example.tsv $(PROCESSED)/id_to_additional_info_example.csv 7 example
+$(PROCESSED)/tsne_output_example.tsv: $(RAW)/raw_tsne_output_example.txt $(BHTSNE)/extract_tsv.py $(PROCESSED)/id_to_additional_info_example.csv
+	python3 $(BHTSNE)/extract_tsv.py $(RAW)/raw_tsne_output_example.txt > $(PROCESSED)/tsne_output_example.tsv
+	python3 $(SRC)/visualization/get_tiling.py $(PROCESSED)/tsne_output_example.tsv $(PROCESSED)/id_to_additional_info_example.csv 7 example
 
 
-visualize: $(SRC)/visualization/tsne_output_$(POST_DATE).tsv
-visualize_example: $(SRC)/visualization/tsne_output_example.tsv
+visualize: $(PROCESSED)/tsne_output_$(POST_DATE).tsv
+visualize_example: $(PROCESSED)/tsne_output_example.tsv
 
 
 # If we already have all required files, but we've updated tiling
 # generation routine OR we obtained those files from somewhere else,
 # we need a rule to just regenerate tiles.
 generate_tiles:
-	python3 $(BHTSNE)/extract_tsv.py $(PROCESSED)/raw_tsne_output_$(POST_DATE).txt > $(SRC)/visualization/tsne_output_$(POST_DATE).tsv
-	python3 $(SRC)/visualization/get_tiling.py $(SRC)/visualization/tsne_output_$(POST_DATE).tsv  $(PROCESSED)/id_to_additional_info_$(POST_DATE).csv 7 $(POST_DATE)
+	python3 $(BHTSNE)/extract_tsv.py $(RAW)/raw_tsne_output_$(POST_DATE).txt > $(PROCESSED)/tsne_output_$(POST_DATE).tsv
+	python3 $(SRC)/visualization/get_tiling.py $(PROCESSED)/tsne_output_$(POST_DATE).tsv  $(PROCESSED)/id_to_additional_info_$(POST_DATE).csv 6 $(POST_DATE)
 
 
 # https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html
