@@ -4,15 +4,27 @@ import os
 import heapq
 
 import math
+import random
+
 from PIL import Image, ImageDraw, ImageOps, ImageFont
 
 from tiler.tiler import *
 
 
 class DarkTiler(Tiler):
+    _cluster_colors = {'-1': (255, 255, 255)}
+
+    def get_cluster_color(self, cluster_label):
+        try:
+            return self._cluster_colors[cluster_label]
+        except KeyError:
+            color = (random.randint(120,250), random.randint(120,250),random.randint(120,250))
+            self._cluster_colors[cluster_label] = color
+            return self._cluster_colors[cluster_label]
+
     def set_fonts(self):
         path_to_font = os.path.join(os.path.dirname(os.path.abspath(__file__)), './Verdana.ttf')
-        self.fonts = [ImageFont.truetype(path_to_font, ANTIALIASING_SCALE * (25 + zoom * 2)) for zoom in range(8 + 1)]
+        self.fonts = [ImageFont.truetype(path_to_font, ANTIALIASING_SCALE * (25 + zoom ** 2)) for zoom in range(8 + 1)]
 
     def __init__(self, tags):
         super().__init__(tags)
@@ -90,14 +102,14 @@ class DarkTiler(Tiler):
                 # it's big! lets draw star on it
                 draw.polygon(self.make_star(pnt, circle_rad),
                              outline=(color_component, color_component, color_component),
-                             fill=(color_component, color_component, int(color_component * 0.9)))
+                             fill=self.get_cluster_color(tag.cluster_label))
             elif circle_rad > 0.5:
                 draw.ellipse([pnt.x - circle_rad, pnt.y - circle_rad,
                               pnt.x + circle_rad, pnt.y + circle_rad],
-                             fill=(color_component, color_component, color_component))
+                             fill=self.get_cluster_color(tag.cluster_label))
             else:  # better place point instead of messy circle
                 draw.point([pnt.x, pnt.y],
-                           fill=(color_component, color_component, color_component))
+                           fill=self.get_cluster_color(tag.cluster_label))
 
             cnt_points += 1
 
@@ -105,8 +117,10 @@ class DarkTiler(Tiler):
         # (because I did not find any kind of z-index feature in PIL)
         text_fill = (250, 250, 245)
         for tag in tags_inside_tile:
-            if tag.name in names_of_shown_tags:
+            if tag.name == tag.cluster_name:
                 font = self.fonts[zoom]
+                font_size = int(font.size * self.get_postcount_measure(tag)**2)
+                font = ImageFont.truetype(font.path, font_size)
                 text_w, text_h = draw.textsize(tag.name, font=font)
                 pnt_x, pnt_y = get_point_from_tag(tag)
                 text_pos = (pnt_x - int(text_w / 2), pnt_y)

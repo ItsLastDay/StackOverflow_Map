@@ -9,6 +9,7 @@ CPP = g++
 SRC = ./src
 DATA = ./data
 INTERIM = $(DATA)/interim
+RAW = $(DATA)/raw
 PROCESSED = $(DATA)/processed
 BHTSNE = $(SRC)/models/use_bhtsne
 REV_BHTSNE = ../../../
@@ -70,8 +71,8 @@ $(PROCESSED)/id_to_additional_info_example.csv: $(INTERIM)/adj_id_to_nn_id_examp
 
 
 # Obtain all data needed for t-SNE run
-data: $(DATA)/raw/questions.csv $(DATA)/raw/question_tags.csv $(INTERIM)/nn_matrix_$(POST_DATE).txt $(INTERIM)/id_to_additional_info_$(POST_DATE).txt
-data_example: $(INTERIM)/nn_matrix_example.txt $(INTERIM)/id_to_additional_info_example.txt
+data: $(DATA)/raw/questions.csv $(RAW)/question_tags.csv $(INTERIM)/nn_matrix_$(POST_DATE).txt $(PROCESSED)/id_to_additional_info_$(POST_DATE).csv
+data_example: $(INTERIM)/nn_matrix_example.txt $(PROCESSED)/id_to_additional_info_example.csv
 
 
 
@@ -105,6 +106,7 @@ visualize_example: $(PROCESSED)/tsne_output_example.tsv
 # we need a rule to just regenerate tiles.
 generate_tiles:
 	python3 $(BHTSNE)/extract_tsv.py $(RAW)/raw_tsne_output_$(POST_DATE).txt > $(PROCESSED)/tsne_output_$(POST_DATE).tsv
+	python3 $(SRC)/data/cluster_tsne_output.py $(PROCESSED)/tsne_output_$(POST_DATE).tsv $(PROCESSED)/id_to_additional_info_$(POST_DATE).csv
 	python3 $(SRC)/visualization/get_tiling.py $(PROCESSED)/tsne_output_$(POST_DATE).tsv  $(PROCESSED)/id_to_additional_info_$(POST_DATE).csv 6 $(POST_DATE)
 
 
