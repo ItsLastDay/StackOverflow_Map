@@ -6,6 +6,8 @@ algorithm. See a bit more thorough [problem description](https://github.com/ItsL
 
 Everything is written in Python 3.5 and C++.
 
+## Live demonstration: https://tag-map.github.io/
+
 ## Project structure
 
 Our repository follows [cookiecutter](http://drivendata.github.io/cookiecutter-data-science/) Data Science template.  
