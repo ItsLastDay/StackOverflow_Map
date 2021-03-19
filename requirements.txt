@@ -3,7 +3,7 @@ Flask==0.11.1
 gevent==1.1.2
 greenlet==0.4.10
 itsdangerous==0.24
-Jinja2==2.8
+Jinja2==2.11.3
 MarkupSafe==0.23
 objgraph==3.0.1
 Pillow==3.4.2
