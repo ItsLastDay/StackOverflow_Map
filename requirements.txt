@@ -6,6 +6,6 @@ itsdangerous==0.24
 Jinja2==2.8
 MarkupSafe==0.23
 objgraph==3.0.1
-Pillow==3.4.2
+Pillow==8.2.0
 Pyqtree==0.24
 Werkzeug==0.15.3
