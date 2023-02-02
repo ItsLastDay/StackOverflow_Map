@@ -8,4 +8,4 @@ MarkupSafe==0.23
 objgraph==3.0.1
 Pillow==9.3.0
 Pyqtree==0.24
-Werkzeug==0.15.3
+Werkzeug==0.15.5
