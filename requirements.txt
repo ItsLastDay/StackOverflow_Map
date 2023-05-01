@@ -1,5 +1,5 @@
 click==6.6
-Flask==1.0
+Flask==2.3.2
 gevent==1.1.2
 greenlet==0.4.10
 itsdangerous==0.24
